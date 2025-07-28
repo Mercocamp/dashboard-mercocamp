@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles } from 'lucide-react';
+import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send } from 'lucide-react';
 
 // URL da logo do usuário.
 const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-files/image_74b444.png';
 
 // --- FUNÇÃO PARA CHAMADA DA API GEMINI ---
 const callGeminiAPI = async (prompt) => {
-    const apiKey = ""; // Deixe em branco, será gerenciado pelo ambiente
+    // A chave de API será lida das variáveis de ambiente da Vercel
+    const apiKey = process.env.REACT_APP_GEMINI_API_KEY; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
     const payload = {
@@ -22,7 +23,9 @@ const callGeminiAPI = async (prompt) => {
         });
 
         if (!response.ok) {
-            throw new Error(`API Error: ${response.statusText}`);
+            const errorBody = await response.json();
+            console.error("API Error Body:", errorBody);
+            throw new Error(`API Error: ${response.statusText}. Verifique se a chave de API do Gemini está configurada corretamente nas variáveis de ambiente da Vercel.`);
         }
 
         const result = await response.json();
@@ -32,11 +35,11 @@ const callGeminiAPI = async (prompt) => {
             result.candidates[0].content.parts.length > 0) {
             return result.candidates[0].content.parts[0].text;
         } else {
-            return "Não foi possível obter uma resposta da IA. Tente novamente.";
+            return "Não foi possível obter uma resposta da IA. A resposta pode estar vazia ou bloqueada por políticas de segurança.";
         }
     } catch (error) {
         console.error("Erro ao chamar a API Gemini:", error);
-        return "Ocorreu um erro ao se comunicar com a IA.";
+        return `Ocorreu um erro ao se comunicar com a IA: ${error.message}`;
     }
 };
 
@@ -47,13 +50,21 @@ const useData = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const SPREADSHEET_ID = '1QZ5t4RR1Sd4JP5M6l4cyh7Vyr3ruQiA_EF9hNYVk2NQ';
-        const API_KEY = 'AIzaSyDESwQr8FkkWk1k2ybbbO3bRwH0JlxdfDw';
-        const RANGE = 'BaseReceber!A2:AB'; // Da célula A2 até a coluna AB
+        // As chaves agora são lidas das variáveis de ambiente da Vercel
+        const SPREADSHEET_ID = process.env.REACT_APP_SPREADSHEET_ID;
+        const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
+        const RANGE = 'BaseReceber!A2:AB';
 
         const fetchData = async () => {
             setLoading(true);
             setError(null);
+
+            if (!SPREADSHEET_ID || !API_KEY) {
+                setError("As chaves de API da planilha não estão configuradas. Verifique as variáveis de ambiente na Vercel.");
+                setLoading(false);
+                return;
+            }
+
             try {
                 const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`);
                 if (!response.ok) {
@@ -75,7 +86,6 @@ const useData = () => {
                     if (!dateString || typeof dateString !== 'string') return null;
                     const parts = dateString.split('/');
                     if (parts.length === 3) {
-                        // Ano, Mês (0-11), Dia
                         return new Date(parts[2], parts[1] - 1, parts[0]);
                     }
                     return null;
@@ -98,7 +108,7 @@ const useData = () => {
                     rowData.EmissaoDate = parseBrDate(rowData.Emissao);
                     
                     return rowData;
-                }).filter(d => d.EmissaoDate && d.EmissaoDate >= twoYearsAgo) // Filtra dados dos últimos 2 anos
+                }).filter(d => d.EmissaoDate && d.EmissaoDate >= twoYearsAgo)
                 .map((d, index) => ({
                     ...d,
                     id: index,
@@ -186,16 +196,97 @@ const Modal = ({ show, onClose, title, children }) => {
     );
 };
 
-// Botão Flutuante IA
-const GeminiButton = ({ onClick }) => (
-    <button
-        onClick={onClick}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-blue-600 to-teal-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transform transition-all duration-300 z-40"
-        title="Consultar IA Gemini"
-    >
-        <Bot size={28} />
-    </button>
-);
+// Componente Chat Modal
+const ChatModal = ({ show, onClose, dataContext, contextName }) => {
+    const [messages, setMessages] = useState([]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(scrollToBottom, [messages]);
+    
+    useEffect(() => {
+        if(show) {
+            setMessages([{ 
+                sender: 'ai', 
+                text: `Olá! Sou o assistente de IA da Mercocamp. Estou a analisar os dados de ${contextName}. Como posso ajudar?` 
+            }]);
+        }
+    }, [show, contextName]);
+
+    const handleSend = async () => {
+        if (!input.trim()) return;
+
+        const userMessage = { sender: 'user', text: input };
+        setMessages(prev => [...prev, userMessage]);
+        setInput('');
+        setIsLoading(true);
+
+        const dataSample = dataContext.slice(0, 20); // Limita a amostra de dados para não exceder o limite do prompt
+        const prompt = `Você é um analista de dados sênior da Mercocamp. Com base nos seguintes dados de faturamento para ${contextName}, responda à pergunta do usuário.
+        Dados (amostra em formato JSON): ${JSON.stringify(dataSample, null, 2)}
+        
+        Pergunta do usuário: "${userMessage.text}"
+        
+        Responda de forma concisa e direta.`;
+        
+        const aiResponseText = await callGeminiAPI(prompt);
+        const aiMessage = { sender: 'ai', text: aiResponseText };
+        
+        setMessages(prev => [...prev, aiMessage]);
+        setIsLoading(false);
+    };
+
+    if (!show) return null;
+
+    return (
+        <div className="fixed bottom-20 right-6 z-50">
+            <div className="bg-white rounded-2xl shadow-2xl w-96 h-[32rem] flex flex-col">
+                <header className="p-4 border-b flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Assistente Gemini AI</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-800 text-xl font-bold">&times;</button>
+                </header>
+                <div className="flex-1 p-4 overflow-y-auto">
+                    {messages.map((msg, index) => (
+                        <div key={index} className={`flex mb-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`rounded-lg px-3 py-2 max-w-xs ${msg.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-gray-800'}`}>
+                                {msg.text}
+                            </div>
+                        </div>
+                    ))}
+                    {isLoading && (
+                        <div className="flex justify-start">
+                             <div className="rounded-lg px-3 py-2 max-w-xs bg-slate-100 text-gray-800">
+                                ...
+                            </div>
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+                <footer className="p-4 border-t">
+                    <div className="flex gap-2">
+                        <input 
+                            type="text" 
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                            placeholder="Pergunte sobre os dados..."
+                            className="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        />
+                        <button onClick={handleSend} className="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90">
+                            <Send size={20} />
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    );
+};
+
 
 // Componente Globo Terrestre Realista
 const SpinningGlobe = () => {
@@ -816,7 +907,7 @@ export default function App() {
     const [page, setPage] = useState('LOGIN'); // LOGIN, ANIMATING, MENU, DASHBOARD, ANALISE
     const [dashboardId, setDashboardId] = useState(null);
     const { data, loading, error } = useData();
-    const [isGeminiModalOpen, setGeminiModalOpen] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     const handleSelect = (pageType, id) => {
         setDashboardId(id);
@@ -833,12 +924,29 @@ export default function App() {
         setDashboardId(null);
     }
     
-    const handleGeminiClick = () => setGeminiModalOpen(true);
-    const handleGeminiClose = () => setGeminiModalOpen(false);
+    const handleGeminiClick = () => setIsChatOpen(prev => !prev);
+    const handleGeminiClose = () => setIsChatOpen(false);
+
+    const { chatDataContext, chatContextName } = useMemo(() => {
+        if (page === 'DASHBOARD' && dashboardId) {
+            // Lógica para filtrar dados para o dashboard atual
+            const cdMap = {
+                'CD MATRIZ': ['CD MATRIZ', 'CD MATRIZ A', 'CD MATRIZ B'],
+                'CD CARIACICA': ['CD CARIACICA', 'CD CARIACICA 1', 'CD CARIACICA 2', 'CD CARIACICA 3'],
+                'CD VIANA': ['CD VIANA'],
+                'CD CIVIT': ['CD CIVIT']
+            };
+            const locations = cdMap[dashboardId] || [];
+            const filtered = dashboardId === 'GLOBAL' ? data : data.filter(d => locations.includes(d.Lotacao));
+            return { chatDataContext: filtered, chatContextName: dashboardId };
+        }
+        // Poderíamos adicionar contexto para a página de Análise aqui se quiséssemos
+        return { chatDataContext: data, chatContextName: "Geral" };
+    }, [page, dashboardId, data]);
 
     const renderPage = () => {
         if (loading) {
-            return <div className="w-full h-full flex items-center justify-center bg-slate-100 text-gray-800">Carregando dados...</div>;
+            return <div className="w-full h-full flex items-center justify-center bg-slate-100 text-gray-800">Carregando dados da planilha...</div>;
         }
         if (error) {
             return <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-red-500 p-4 text-center">
@@ -887,13 +995,13 @@ export default function App() {
             
             {renderPage()}
 
-            <Modal show={isGeminiModalOpen} onClose={handleGeminiClose} title="Assistente Gemini AI">
-                <div className="text-center text-gray-700">
-                    <Bot size={48} className="mx-auto text-teal-500 mb-4" />
-                    <p className="mb-2">Esta funcionalidade está em desenvolvimento.</p>
-                    <p className="text-sm">Em breve, você poderá fazer perguntas em linguagem natural sobre seus dados e obter insights instantâneos.</p>
-                </div>
-            </Modal>
+            <GeminiButton onClick={handleGeminiClick} />
+            <ChatModal 
+                show={isChatOpen} 
+                onClose={handleGeminiClose} 
+                dataContext={chatDataContext}
+                contextName={chatContextName}
+            />
         </main>
     );
 }
