@@ -7,8 +7,8 @@ const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-
 
 // --- FUNÇÃO PARA CHAMADA DA API GEMINI ---
 const callGeminiAPI = async (prompt, chatHistory = []) => {
-    // A chave de API será lida das variáveis de ambiente da Vercel
-    const apiKey = process.env.REACT_APP_GEMINI_API_KEY; 
+    // Chave da API do Gemini inserida diretamente para garantir o funcionamento.
+    const apiKey = 'AIzaSyBSGdn1weejg1TA4maZwwh4qC8XZ6L8ptg'; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
     const fullHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
@@ -27,7 +27,7 @@ const callGeminiAPI = async (prompt, chatHistory = []) => {
         if (!response.ok) {
             const errorBody = await response.json();
             console.error("API Error Body:", errorBody);
-            throw new Error(`API Error: ${response.statusText}. Verifique se a chave de API do Gemini está configurada corretamente nas variáveis de ambiente da Vercel.`);
+            throw new Error(`API Error: ${response.statusText}.`);
         }
 
         const result = await response.json();
@@ -37,7 +37,6 @@ const callGeminiAPI = async (prompt, chatHistory = []) => {
             result.candidates[0].content.parts.length > 0) {
             return result.candidates[0].content.parts[0].text;
         } else {
-             // Adiciona log para depuração em caso de resposta inesperada
             console.warn("Resposta da API Gemini com estrutura inesperada:", result);
             return "Não foi possível obter uma resposta da IA. A resposta pode estar vazia ou bloqueada por políticas de segurança.";
         }
@@ -193,17 +192,6 @@ const Modal = ({ show, onClose, title, children }) => {
         </div>
     );
 };
-
-// Botão Flutuante IA
-const GeminiButton = ({ onClick }) => (
-    <button
-        onClick={onClick}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-blue-600 to-teal-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transform transition-all duration-300 z-40"
-        title="Consultar IA Gemini"
-    >
-        <Bot size={28} />
-    </button>
-);
 
 // Componente Chat Modal
 const ChatModal = ({ show, onClose, dataContext, contextName }) => {
