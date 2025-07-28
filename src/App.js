@@ -40,52 +40,87 @@ const callGeminiAPI = async (prompt) => {
     }
 };
 
-// Mock Data - Simula os dados da sua planilha "BaseReceber2025"
-const mockApiData = [
-    // --- Dados de Julho/2025 (Competência 07/2025) ---
-    { id: 1, Codigo: 101, Cliente: 'Cliente Alpha', Emissao: '2025-07-16', Vencimento: '2025-07-30', Vlr_Titulo: 5200.50, Vlr_Receber: 0.00, Data_Pagamento: '2025-07-28', Vlr_Recebido: 5200.50, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: -2, Competencia: '07/2025', Lotacao: 'CD MATRIZ' },
-    { id: 2, Codigo: 102, Cliente: 'Cliente Beta', Emissao: '2025-07-16', Vencimento: '2025-07-31', Vlr_Titulo: 12500.00, Vlr_Receber: 0.00, Data_Pagamento: '2025-08-02', Vlr_Recebido: 12500.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Sim', Dias_Atraso: 2, Competencia: '07/2025', Lotacao: 'CD CARIACICA' },
-    { id: 3, Codigo: 103, Cliente: 'Cliente Gamma', Emissao: '2025-07-17', Vencimento: '2025-08-05', Vlr_Titulo: 7800.75, Vlr_Receber: 7800.75, Data_Pagamento: null, Vlr_Recebido: 0.00, Status_titulo: 'Em Aberto', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: -10, Competencia: '07/2025', Lotacao: 'CD VIANA' },
-    { id: 4, Codigo: 104, Cliente: 'Cliente Delta', Emissao: '2025-07-20', Vencimento: '2025-08-10', Vlr_Titulo: 3400.00, Vlr_Receber: 3400.00, Data_Pagamento: null, Vlr_Recebido: 0.00, Status_titulo: 'Em Aberto', Tipo_Resumido: 'Aluguel', Recebido_em_Atraso: 'Não', Dias_Atraso: -15, Competencia: '07/2025', Lotacao: 'CD CIVIT' },
-    { id: 5, Codigo: 101, Cliente: 'Cliente Alpha', Emissao: '2025-07-20', Vencimento: '2025-08-10', Vlr_Titulo: 1500.00, Vlr_Receber: 1500.00, Data_Pagamento: null, Vlr_Recebido: 0.00, Status_titulo: 'Em Aberto', Tipo_Resumido: 'Aluguel', Recebido_em_Atraso: 'Não', Dias_Atraso: -15, Competencia: '07/2025', Lotacao: 'CD MATRIZ' },
-    { id: 15, Codigo: 106, Cliente: 'Cliente Zeta', Emissao: '2025-07-18', Vencimento: '2025-08-08', Vlr_Titulo: 800.00, Vlr_Receber: 800.00, Data_Pagamento: null, Vlr_Recebido: 0.00, Status_titulo: 'Em Aberto', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: -12, Competencia: '07/2025', Lotacao: 'CD MATRIZ' },
-    { id: 16, Codigo: 107, Cliente: 'Cliente Eta', Emissao: '2025-07-19', Vencimento: '2025-08-09', Vlr_Titulo: 950.00, Vlr_Receber: 950.00, Data_Pagamento: null, Vlr_Recebido: 0.00, Status_titulo: 'Em Aberto', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: -13, Competencia: '07/2025', Lotacao: 'CD MATRIZ' },
-    // --- Dados de Junho/2025 (Competência 06/2025) ---
-    { id: 6, Codigo: 101, Cliente: 'Cliente Alpha', Emissao: '2025-06-15', Vencimento: '2025-06-30', Vlr_Titulo: 4800.00, Vlr_Receber: 0.00, Data_Pagamento: '2025-06-29', Vlr_Recebido: 4800.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: -1, Competencia: '06/2025', Lotacao: 'CD MATRIZ' },
-    { id: 7, Codigo: 102, Cliente: 'Cliente Beta', Emissao: '2025-06-16', Vencimento: '2025-07-01', Vlr_Titulo: 11000.00, Vlr_Receber: 0.00, Data_Pagamento: '2025-07-01', Vlr_Recebido: 11000.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: 0, Competencia: '06/2025', Lotacao: 'CD CARIACICA' },
-    { id: 8, Codigo: 103, Cliente: 'Cliente Gamma', Emissao: '2025-06-18', Vencimento: '2025-07-05', Vlr_Titulo: 7500.00, Vlr_Receber: 0.00, Data_Pagamento: '2025-07-08', Vlr_Recebido: 7500.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Sim', Dias_Atraso: 3, Competencia: '06/2025', Lotacao: 'CD VIANA' },
-    { id: 9, Codigo: 105, Cliente: 'Cliente Epsilon', Emissao: '2025-06-20', Vencimento: '2025-07-10', Vlr_Titulo: 2200.00, Vlr_Receber: 0.00, Data_Pagamento: '2025-07-10', Vlr_Recebido: 2200.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: 0, Competencia: '06/2025', Lotacao: 'CD MATRIZ' },
-    { id: 10, Codigo: 104, Cliente: 'Cliente Delta', Emissao: '2025-06-20', Vencimento: '2025-07-10', Vlr_Titulo: 3400.00, Vlr_Receber: 0.00, Data_Pagamento: '2025-07-10', Vlr_Recebido: 3400.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Aluguel', Recebido_em_Atraso: 'Não', Dias_Atraso: 0, Competencia: '06/2025', Lotacao: 'CD CIVIT' },
-    // --- Dados Históricos para Análise Individual ---
-    { id: 11, Codigo: 101, Cliente: 'Cliente Alpha', Emissao: '2024-01-15', Vencimento: '2024-01-30', Vlr_Titulo: 3500.00, Vlr_Receber: 0.00, Data_Pagamento: '2024-01-29', Vlr_Recebido: 3500.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: -1, Competencia: '01/2024', Lotacao: 'CD MATRIZ' },
-    { id: 12, Codigo: 101, Cliente: 'Cliente Alpha', Emissao: '2024-02-15', Vencimento: '2024-02-28', Vlr_Titulo: 3800.00, Vlr_Receber: 0.00, Data_Pagamento: '2024-03-02', Vlr_Recebido: 3800.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Sim', Dias_Atraso: 3, Competencia: '02/2024', Lotacao: 'CD MATRIZ' },
-    { id: 13, Codigo: 101, Cliente: 'Cliente Alpha', Emissao: '2025-01-15', Vencimento: '2025-01-30', Vlr_Titulo: 4200.00, Vlr_Receber: 0.00, Data_Pagamento: '2025-01-30', Vlr_Recebido: 4200.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Não', Dias_Atraso: 0, Competencia: '01/2025', Lotacao: 'CD MATRIZ' },
-    { id: 14, Codigo: 101, Cliente: 'Cliente Alpha', Emissao: '2025-02-15', Vencimento: '2025-02-28', Vlr_Titulo: 4300.00, Vlr_Receber: 0.00, Data_Pagamento: '2025-03-01', Vlr_Recebido: 4300.00, Status_titulo: 'Quitado', Tipo_Resumido: 'Armazenagem', Recebido_em_Atraso: 'Sim', Dias_Atraso: 1, Competencia: '02/2025', Lotacao: 'CD MATRIZ' },
-];
-
-// Hook de dados para buscar e processar dados (revertido para mock data para preview)
+// Hook de dados para buscar e processar dados da Planilha Google
 const useData = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        setTimeout(() => {
+        const SPREADSHEET_ID = '1QZ5t4RR1Sd4JP5M6l4cyh7Vyr3ruQiA_EF9hNYVk2NQ';
+        const API_KEY = 'AIzaSyDESwQr8FkkWk1k2ybbbO3bRwH0JlxdfDw';
+        const RANGE = 'BaseReceber!A2:AB'; // Da célula A2 até a coluna AB
+
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const processedData = mockApiData.map((d, index) => ({
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Google Sheets API Error:", errorData);
+                    throw new Error('Falha ao buscar dados. Verifique se a chave de API é válida, se a planilha está compartilhada como "Qualquer pessoa com o link pode ver" e se o endereço do site está autorizado nas restrições da chave.');
+                }
+                const result = await response.json();
+                const rows = result.values || [];
+
+                const headers = [
+                    'Codigo', 'Cliente', 'Vencimento', 'Emissao', 'NF', 'Lotacao_Origem', 'TP_Receita', 'TP_Receita_Detalhada', 'Vlr_NF', 'Vlr_Titulo',
+                    'Vlr_Receber', 'Vlr_Juros_Multa', 'Data_Pagamento', 'Vlr_Recebido', 'Vlr_Desconto', 'Status_titulo', 'Tipo_Resumido', 'Recebido_em',
+                    'Recebido_em_Banco', 'Recebido_em_Atraso', 'Recebido_em_Atraso_Juros', 'Observacao', 'Faturado_Por', 'Faturado_Em', 'Competencia',
+                    'Quinzenal', 'Lotacao', 'Dias_Atraso'
+                ];
+
+                const parseBrDate = (dateString) => {
+                    if (!dateString || typeof dateString !== 'string') return null;
+                    const parts = dateString.split('/');
+                    if (parts.length === 3) {
+                        // Ano, Mês (0-11), Dia
+                        return new Date(parts[2], parts[1] - 1, parts[0]);
+                    }
+                    return null;
+                };
+
+                const parseCurrency = (currencyString) => {
+                    if (typeof currencyString !== 'string') return 0;
+                    return parseFloat(currencyString.replace(/[R$.]/g, '').replace(',', '.').trim()) || 0;
+                };
+
+                const twoYearsAgo = new Date();
+                twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+
+                const processedData = rows.map((row, rowIndex) => {
+                    const rowData = {};
+                    headers.forEach((header, index) => {
+                        rowData[header] = row[index] || null;
+                    });
+                    
+                    rowData.EmissaoDate = parseBrDate(rowData.Emissao);
+                    
+                    return rowData;
+                }).filter(d => d.EmissaoDate && d.EmissaoDate >= twoYearsAgo) // Filtra dados dos últimos 2 anos
+                .map((d, index) => ({
                     ...d,
                     id: index,
-                    EmissaoDate: new Date(d.Emissao),
-                    VencimentoDate: new Date(d.Vencimento),
-                    PagamentoDate: d.Data_Pagamento ? new Date(d.Data_Pagamento) : null,
+                    Codigo: parseInt(d.Codigo, 10),
+                    VencimentoDate: parseBrDate(d.Vencimento),
+                    PagamentoDate: parseBrDate(d.Data_Pagamento),
+                    Vlr_Titulo: parseCurrency(d.Vlr_Titulo),
+                    Vlr_Recebido: parseCurrency(d.Vlr_Recebido),
+                    Dias_Atraso: parseInt(d.Dias_Atraso, 10) || 0,
                 }));
+
                 setData(processedData);
-                setLoading(false);
+
             } catch (e) {
-                setError("Falha ao processar dados de exemplo.");
+                console.error(e);
+                setError(e.message);
+            } finally {
                 setLoading(false);
             }
-        }, 1000);
+        };
+
+        fetchData();
     }, []);
 
     return { data, loading, error };
