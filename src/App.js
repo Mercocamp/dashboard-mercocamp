@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send } from 'lucide-react';
+import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock } from 'lucide-react';
 
 // URL da logo do usuário.
 const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-files/image_74b444.png';
@@ -11,7 +11,6 @@ const callGeminiAPI = async (prompt, chatHistory = []) => {
     const apiKey = 'AIzaSyBSGdn1weejg1TA4maZwwh4qC8XZ6L8ptg'; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
-    // Histórico formatado + nova pergunta do usuário
     const fullHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
 
     const payload = {
@@ -194,17 +193,6 @@ const Modal = ({ show, onClose, title, children }) => {
     );
 };
 
-// Botão Flutuante IA
-const GeminiButton = ({ onClick }) => (
-    <button
-        onClick={onClick}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-blue-600 to-teal-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transform transition-all duration-300 z-40"
-        title="Consultar IA Gemini"
-    >
-        <Bot size={28} />
-    </button>
-);
-
 // Componente Chat Modal
 const ChatModal = ({ show, onClose, dataContext, contextName }) => {
     const [messages, setMessages] = useState([]);
@@ -337,7 +325,7 @@ const LogisticsIntroAnimation = ({ onAnimationEnd }) => {
 
         const timer = setTimeout(() => {
             setIndex(prev => prev + 1);
-        }, 1200); // Duração de cada etapa da animação
+        }, 1000); // Duração de cada etapa da animação (acelerado)
 
         return () => clearTimeout(timer);
     }, [index, onAnimationEnd, stages.length]);
@@ -361,17 +349,60 @@ const LogisticsIntroAnimation = ({ onAnimationEnd }) => {
     );
 };
 
-// Página de Login
-const LoginPage = ({ onEnter }) => (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 p-4">
-        <StyledCard className="p-10 flex flex-col items-center text-center">
-            <img src={userLogoUrl} alt="Mercocamp Logo" className="w-64 h-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/256x100/f1f5f9/06b6d4?text=Mercocamp'; }} />
-            <button onClick={onEnter} className={`px-12 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50`}>
-                Entrar
-            </button>
-        </StyledCard>
-    </div>
-);
+// Página de Login com Usuário e Senha
+const LoginPage = ({ onLogin }) => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const handleLogin = () => {
+        // Lógica de autenticação simples e hardcoded
+        if ((username === 'logistica' && password === '6057') || (username === 'adm01' && password === '6057')) {
+            setError('');
+            onLogin();
+        } else {
+            setError('Login ou senha incorreta.');
+        }
+    };
+    
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    };
+
+    return (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 p-4">
+            <div className="w-full max-w-sm">
+                <img src={userLogoUrl} alt="Mercocamp Logo" className="w-48 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/192x100/e2e8f0/0d9488?text=Mercocamp'; }} />
+                
+                <div className="space-y-4">
+                    <input 
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Login"
+                        className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                    <input 
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Senha"
+                        className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                </div>
+
+                {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+
+                <button onClick={handleLogin} className={`w-full mt-6 px-12 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50`}>
+                    Entrar
+                </button>
+            </div>
+        </div>
+    );
+};
 
 // Página de Menu
 const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
@@ -970,7 +1001,7 @@ export default function App() {
 
         switch (page) {
             case 'LOGIN':
-                return <LoginPage onEnter={() => setPage('ANIMATING')} />;
+                return <LoginPage onLogin={() => setPage('ANIMATING')} />;
             case 'ANIMATING':
                 return <LogisticsIntroAnimation onAnimationEnd={() => setPage('MENU')} />;
             case 'MENU':
@@ -980,7 +1011,7 @@ export default function App() {
             case 'ANALISE':
                 return <AnalysisPage data={data} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} />;
             default:
-                return <LoginPage onEnter={() => setPage('ANIMATING')} />;
+                return <LoginPage onLogin={() => setPage('ANIMATING')} />;
         }
     };
 
