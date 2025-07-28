@@ -50,20 +50,14 @@ const useData = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // As chaves agora são lidas das variáveis de ambiente da Vercel
-        const SPREADSHEET_ID = process.env.REACT_APP_SPREADSHEET_ID;
-        const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
+        // Chaves inseridas diretamente para garantir o funcionamento na Vercel
+        const SPREADSHEET_ID = '1QZ5t4RR1Sd4JP5M6l4cyh7Vyr3ruQiA_EF9hNYVk2NQ';
+        const API_KEY = 'AIzaSyDESwQr8FkkWk1k2ybbbO3bRwH0JlxdfDw';
         const RANGE = 'BaseReceber!A2:AB';
 
         const fetchData = async () => {
             setLoading(true);
             setError(null);
-
-            if (!SPREADSHEET_ID || !API_KEY) {
-                setError("As chaves de API da planilha não estão configuradas. Verifique as variáveis de ambiente na Vercel.");
-                setLoading(false);
-                return;
-            }
 
             try {
                 const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`);
