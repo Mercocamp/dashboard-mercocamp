@@ -6,13 +6,15 @@ import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Ware
 const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-files/image_74b444.png';
 
 // --- FUNÇÃO PARA CHAMADA DA API GEMINI ---
-const callGeminiAPI = async (prompt) => {
+const callGeminiAPI = async (prompt, chatHistory = []) => {
     // A chave de API será lida das variáveis de ambiente da Vercel
     const apiKey = process.env.REACT_APP_GEMINI_API_KEY; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
+    const fullHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
+
     const payload = {
-        contents: [{ role: "user", parts: [{ text: prompt }] }]
+        contents: fullHistory
     };
 
     try {
@@ -35,6 +37,8 @@ const callGeminiAPI = async (prompt) => {
             result.candidates[0].content.parts.length > 0) {
             return result.candidates[0].content.parts[0].text;
         } else {
+             // Adiciona log para depuração em caso de resposta inesperada
+            console.warn("Resposta da API Gemini com estrutura inesperada:", result);
             return "Não foi possível obter uma resposta da IA. A resposta pode estar vazia ou bloqueada por políticas de segurança.";
         }
     } catch (error) {
@@ -190,17 +194,6 @@ const Modal = ({ show, onClose, title, children }) => {
     );
 };
 
-// Botão Flutuante IA
-const GeminiButton = ({ onClick }) => (
-    <button
-        onClick={onClick}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-blue-600 to-teal-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transform transition-all duration-300 z-40"
-        title="Consultar IA Gemini"
-    >
-        <Bot size={28} />
-    </button>
-);
-
 // Componente Chat Modal
 const ChatModal = ({ show, onClose, dataContext, contextName }) => {
     const [messages, setMessages] = useState([]);
@@ -218,28 +211,35 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
         if(show) {
             setMessages([{ 
                 sender: 'ai', 
-                text: `Olá! Sou o assistente de IA da Mercocamp. Estou a analisar os dados de ${contextName}. Como posso ajudar?` 
+                text: `Olá! Sou o assistente de IA da Mercocamp. Tenho acesso aos dados de ${contextName}, à data atual e posso fazer pesquisas na web. Como posso ajudar?` 
             }]);
         }
     }, [show, contextName]);
 
     const handleSend = async () => {
-        if (!input.trim()) return;
+        if (!input.trim() || isLoading) return;
 
         const userMessage = { sender: 'user', text: input };
-        setMessages(prev => [...prev, userMessage]);
+        const newMessages = [...messages, userMessage];
+        setMessages(newMessages);
         setInput('');
         setIsLoading(true);
 
-        const dataSample = dataContext.slice(0, 20); // Limita a amostra de dados para não exceder o limite do prompt
-        const prompt = `Você é um analista de dados sênior da Mercocamp. Com base nos seguintes dados de faturamento para ${contextName}, responda à pergunta do usuário.
-        Dados (amostra em formato JSON): ${JSON.stringify(dataSample, null, 2)}
+        const dataSample = dataContext.slice(0, 15); // Limita a amostra de dados
+        const currentDate = new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        const prompt = `Você é um analista de dados sênior da Mercocamp. A data de hoje é ${currentDate}.
+        Você tem acesso a uma amostra dos dados de faturamento de "${contextName}" e pode usar a ferramenta de busca do Google para informações externas ou cálculos.
         
-        Pergunta do usuário: "${userMessage.text}"
+        Amostra de Dados (JSON):
+        ${JSON.stringify(dataSample, null, 2)}
         
-        Responda de forma concisa e direta.`;
+        Histórico da conversa:
+        ${newMessages.map(m => `${m.sender}: ${m.text}`).join('\n')}
         
-        const aiResponseText = await callGeminiAPI(prompt);
+        Responda à última pergunta do usuário de forma concisa e direta. Se a resposta não estiver nos dados, use a busca na internet. Se precisar de um cálculo, use a ferramenta de busca.`;
+        
+        const aiResponseText = await callGeminiAPI(prompt, newMessages);
         const aiMessage = { sender: 'ai', text: aiResponseText };
         
         setMessages(prev => [...prev, aiMessage]);
@@ -282,7 +282,7 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
                             placeholder="Pergunte sobre os dados..."
                             className="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                         />
-                        <button onClick={handleSend} className="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90">
+                        <button onClick={handleSend} disabled={isLoading} className="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50">
                             <Send size={20} />
                         </button>
                     </div>
