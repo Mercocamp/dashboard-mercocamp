@@ -193,17 +193,6 @@ const Modal = ({ show, onClose, title, children }) => {
     );
 };
 
-// Botão Flutuante IA
-const GeminiButton = ({ onClick }) => (
-    <button
-        onClick={onClick}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-blue-600 to-teal-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transform transition-all duration-300 z-40"
-        title="Consultar IA Gemini"
-    >
-        <Bot size={28} />
-    </button>
-);
-
 // Componente Chat Modal
 const ChatModal = ({ show, onClose, dataContext, contextName }) => {
     const [messages, setMessages] = useState([]);
@@ -368,7 +357,7 @@ const LoginPage = ({ onLogin }) => {
 
     const handleLogin = () => {
         // Lógica de autenticação simples e hardcoded
-        if ((username === 'logistica' && password === '6057') || (username === 'adm01' && password === '6057')) {
+        if ((username.toLowerCase() === 'logistica' && password === '6057') || (username.toLowerCase() === 'adm01' && password === '6057')) {
             setError('');
             onLogin();
         } else {
