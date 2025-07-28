@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Caravan, Plane, Sparkles } from 'lucide-react';
+import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles } from 'lucide-react';
 
 // URL da logo do usuário.
 const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-files/image_74b444.png';
@@ -183,7 +183,7 @@ const SpinningGlobe = () => {
 // Animação de Introdução Logística (Estilo GIF Centralizado)
 const LogisticsIntroAnimation = ({ onAnimationEnd }) => {
     const stages = [
-        { icon: <Caravan size={80} />, name: "Van" },
+        { icon: <Car size={80} />, name: "Veículo" },
         { icon: <Truck size={80} />, name: "Caminhão" },
         { icon: <Ship size={80} />, name: "Navio" },
         { icon: <Plane size={80} />, name: "Avião" },
