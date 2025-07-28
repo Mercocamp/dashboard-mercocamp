@@ -11,6 +11,7 @@ const callGeminiAPI = async (prompt, chatHistory = []) => {
     const apiKey = 'AIzaSyBSGdn1weejg1TA4maZwwh4qC8XZ6L8ptg'; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
+    // Histórico formatado + nova pergunta do usuário
     const fullHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
 
     const payload = {
@@ -193,17 +194,6 @@ const Modal = ({ show, onClose, title, children }) => {
     );
 };
 
-// Botão Flutuante IA
-const GeminiButton = ({ onClick }) => (
-    <button
-        onClick={onClick}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-blue-600 to-teal-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transform transition-all duration-300 z-40"
-        title="Consultar IA Gemini"
-    >
-        <Bot size={28} />
-    </button>
-);
-
 // Componente Chat Modal
 const ChatModal = ({ show, onClose, dataContext, contextName }) => {
     const [messages, setMessages] = useState([]);
@@ -230,26 +220,23 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
         if (!input.trim() || isLoading) return;
 
         const userMessage = { sender: 'user', text: input };
-        const newMessages = [...messages, userMessage];
-        setMessages(newMessages);
+        const newMessagesForUI = [...messages, userMessage];
+        setMessages(newMessagesForUI);
+        const currentInput = input;
         setInput('');
         setIsLoading(true);
+
+        const apiChatHistory = messages.map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+        }));
 
         const dataSample = dataContext.slice(0, 15); // Limita a amostra de dados
         const currentDate = new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        const prompt = `Você é um analista de dados sênior da Mercocamp. A data de hoje é ${currentDate}.
-        Você tem acesso a uma amostra dos dados de faturamento de "${contextName}" e pode usar a ferramenta de busca do Google para informações externas ou cálculos.
+        const prompt = `Contexto: A data de hoje é ${currentDate}. Você está a analisar dados de "${contextName}". Amostra de dados: ${JSON.stringify(dataSample, null, 2)}. Pergunta do usuário: "${currentInput}"`;
         
-        Amostra de Dados (JSON):
-        ${JSON.stringify(dataSample, null, 2)}
-        
-        Histórico da conversa:
-        ${newMessages.map(m => `${m.sender}: ${m.text}`).join('\n')}
-        
-        Responda à última pergunta do usuário de forma concisa e direta. Se a resposta não estiver nos dados, use a busca na internet. Se precisar de um cálculo, use a ferramenta de busca.`;
-        
-        const aiResponseText = await callGeminiAPI(prompt, newMessages);
+        const aiResponseText = await callGeminiAPI(prompt, apiChatHistory);
         const aiMessage = { sender: 'ai', text: aiResponseText };
         
         setMessages(prev => [...prev, aiMessage]);
