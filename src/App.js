@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock } from 'lucide-react';
+import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
 
 // URL da logo do usuário.
 const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-files/image_74b444.png';
@@ -113,6 +113,7 @@ const useData = () => {
                     VencimentoDate: parseBrDate(d.Vencimento),
                     PagamentoDate: parseBrDate(d.Data_Pagamento),
                     Vlr_Titulo: parseCurrency(d.Vlr_Titulo),
+                    Vlr_Receber: parseCurrency(d.Vlr_Receber),
                     Vlr_Recebido: parseCurrency(d.Vlr_Recebido),
                     Dias_Atraso: parseInt(d.Dias_Atraso, 10) || 0,
                 }));
@@ -620,9 +621,9 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         uniqueClients.forEach(client => {
             const score = getClientScore(client.Cliente, data).text;
             const clientInvoices = filteredData.filter(f => f.Cliente === client.Cliente);
-            const avgFaturamento = clientInvoices.length > 0 ? clientInvoices.reduce((acc, curr) => acc + curr.Vlr_Titulo, 0) / clientInvoices.length : 0;
+            const totalFaturado = clientInvoices.reduce((acc, curr) => acc + curr.Vlr_Titulo, 0);
             if (distribution[score]) {
-                distribution[score].push({ name: client.Cliente, avg: avgFaturamento });
+                distribution[score].push({ name: client.Cliente, total: totalFaturado });
             }
         });
         return distribution;
@@ -661,6 +662,37 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         setAiSummary(summary);
         setIsAiLoading(false);
     };
+
+    const { rating, ratingColor } = useMemo(() => {
+        const producao = kpis.percentage;
+        const totalFaturado = kpis.cdTotal.value;
+        if (totalFaturado === 0) return { rating: 'N/A', ratingColor: 'text-gray-500' };
+
+        const totalAtrasado = filteredData
+            .filter(d => d.Status_titulo === 'Atrasado' || d.Status_titulo === 'Em Aberto')
+            .reduce((acc, d) => acc + d.Vlr_Receber, 0);
+        
+        const percentualAtrasado = (totalAtrasado / totalFaturado) * 100;
+        
+        // Fórmula do Rating: (Peso da Produção) - (Peso da Inadimplência)
+        const score = (producao * 0.7) - (percentualAtrasado * 1.3);
+
+        if (score > 60) return { rating: 'A', ratingColor: 'text-green-500' };
+        if (score > 40) return { rating: 'B', ratingColor: 'text-lime-500' };
+        if (score > 20) return { rating: 'C', ratingColor: 'text-yellow-500' };
+        if (score > 0) return { rating: 'D', ratingColor: 'text-orange-500' };
+        return { rating: 'E', ratingColor: 'text-red-500' };
+    }, [kpis, filteredData]);
+
+    const saldoDevedorPorCliente = useMemo(() => {
+        const devedores = {};
+        filteredData
+            .filter(d => d.Vlr_Receber > 0)
+            .forEach(d => {
+                devedores[d.Cliente] = (devedores[d.Cliente] || 0) + d.Vlr_Receber;
+            });
+        return Object.entries(devedores).sort(([,a],[,b]) => b - a);
+    }, [filteredData]);
 
     if (loading) return <div className="w-full h-full flex items-center justify-center bg-slate-100 text-gray-800">Carregando dados...</div>;
     if (error) return <div className="w-full h-full flex items-center justify-center text-red-500 bg-slate-100">{error}</div>;
@@ -757,6 +789,30 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                 </StyledCard>
             </div>
 
+            <div className="grid grid-cols-2 gap-6 mb-6">
+                <StyledCard className="p-4 text-center flex flex-col justify-center items-center">
+                    <div className="flex items-center gap-2 text-gray-800 mb-2">
+                        <h3 className="font-semibold text-lg">Rating de Performance do CD</h3>
+                        <div className="tooltip">
+                            <Info size={16} className="text-gray-400" />
+                            <span className="tooltip-text">Calculado com base na produção (peso do CD no faturamento global) e penalizado pela inadimplência (valor em aberto/atrasado).</span>
+                        </div>
+                    </div>
+                    <p className={`text-7xl font-bold ${ratingColor}`}>{rating}</p>
+                </StyledCard>
+                <StyledCard className="p-4">
+                    <h3 className="font-semibold mb-4 text-lg text-gray-800">Saldo Devedor por Cliente</h3>
+                    <div className="overflow-y-auto h-32 pr-2">
+                        {saldoDevedorPorCliente.length > 0 ? saldoDevedorPorCliente.map(([cliente, valor]) => (
+                            <div key={cliente} className="flex justify-between items-center p-2 rounded-lg hover:bg-slate-50 text-sm">
+                                <p className="font-semibold text-gray-800 truncate">{cliente}</p>
+                                <p className="font-bold text-red-600">{formatCurrency(valor)}</p>
+                            </div>
+                        )) : <p className="text-gray-500 text-center mt-8">Nenhum saldo devedor no período.</p>}
+                    </div>
+                </StyledCard>
+            </div>
+
             <StyledCard className="p-4">
                 <h3 className="font-semibold mb-4 text-lg text-gray-800">Faturamento e Títulos por Dia</h3>
                 <ResponsiveContainer width="100%" height={300}>
@@ -778,7 +834,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                     {scoreModal.data.length > 0 ? scoreModal.data.map(client => (
                         <div key={client.name} className="flex justify-between items-center p-2 rounded-lg hover:bg-slate-100">
                             <p className="text-gray-800">{client.name}</p>
-                            <p className="text-gray-600">Média: {formatCurrency(client.avg)}</p>
+                            <p className="text-gray-600">Total Faturado: {formatCurrency(client.total)}</p>
                         </div>
                     )) : <p className="text-gray-500 text-center">Nenhum cliente nesta categoria.</p>}
                 </div>
@@ -1045,6 +1101,30 @@ export default function App() {
                 .animate-takeoff-center {
                     animation: takeoff-center 1.5s ease-in forwards;
                     animation-delay: 0.2s;
+                }
+                .tooltip {
+                    position: relative;
+                    display: inline-block;
+                }
+                .tooltip .tooltip-text {
+                    visibility: hidden;
+                    width: 220px;
+                    background-color: #555;
+                    color: #fff;
+                    text-align: center;
+                    border-radius: 6px;
+                    padding: 5px;
+                    position: absolute;
+                    z-index: 1;
+                    bottom: 125%;
+                    left: 50%;
+                    margin-left: -110px;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                }
+                .tooltip:hover .tooltip-text {
+                    visibility: visible;
+                    opacity: 1;
                 }
             `}</style>
             
