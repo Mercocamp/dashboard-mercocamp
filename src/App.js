@@ -8,9 +8,9 @@ const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-
 // --- FUNÇÃO PARA CHAMADA DA API GEMINI ---
 const callGeminiAPI = async (prompt, chatHistory = []) => {
     // Chave da API do Gemini inserida diretamente para garantir o funcionamento.
-    const apiKey = 'AIzaSyBSGdn1weejg1TA4maZwwh4qC8XZ6L8ptg'; 
+    const apiKey = 'AIzaSyBSGdn1weejg1TA4maZwwh4qC8XZ6L8ptg';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    
+
     const fullHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
 
     const payload = {
@@ -31,7 +31,7 @@ const callGeminiAPI = async (prompt, chatHistory = []) => {
         }
 
         const result = await response.json();
-        
+
         if (result.candidates && result.candidates.length > 0 &&
             result.candidates[0].content && result.candidates[0].content.parts &&
             result.candidates[0].content.parts.length > 0) {
@@ -101,9 +101,9 @@ const useData = () => {
                     headers.forEach((header, index) => {
                         rowData[header] = row[index] || null;
                     });
-                    
+
                     rowData.EmissaoDate = parseBrDate(rowData.Emissao);
-                    
+
                     return rowData;
                 }).filter(d => d.EmissaoDate && d.EmissaoDate >= twoYearsAgo)
                 .map((d, index) => ({
@@ -217,12 +217,12 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
     };
 
     useEffect(scrollToBottom, [messages]);
-    
+
     useEffect(() => {
         if(show) {
-            setMessages([{ 
-                sender: 'ai', 
-                text: `Olá! Sou o assistente de IA da Mercocamp. Tenho acesso aos dados de ${contextName}, à data atual e posso fazer pesquisas na web. Como posso ajudar?` 
+            setMessages([{
+                sender: 'ai',
+                text: `Olá! Sou o assistente de IA da Mercocamp. Tenho acesso aos dados de ${contextName}, à data atual e posso fazer pesquisas na web. Como posso ajudar?`
             }]);
         }
     }, [show, contextName]);
@@ -246,10 +246,10 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
         const currentDate = new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
         const prompt = `Contexto: A data de hoje é ${currentDate}. Você está a analisar dados de "${contextName}". Amostra de dados: ${JSON.stringify(dataSample, null, 2)}. Pergunta do usuário: "${currentInput}"`;
-        
+
         const aiResponseText = await callGeminiAPI(prompt, apiChatHistory);
         const aiMessage = { sender: 'ai', text: aiResponseText };
-        
+
         setMessages(prev => [...prev, aiMessage]);
         setIsLoading(false);
     };
@@ -273,8 +273,8 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
                     ))}
                     {isLoading && (
                         <div className="flex justify-start">
-                             <div className="rounded-lg px-3 py-2 max-w-xs bg-slate-100 text-gray-800">
-                                ...
+                            <div className="rounded-lg px-3 py-2 max-w-xs bg-slate-100 text-gray-800">
+                                 ...
                             </div>
                         </div>
                     )}
@@ -282,8 +282,8 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
                 </div>
                 <footer className="p-4 border-t">
                     <div className="flex gap-2">
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
@@ -306,7 +306,7 @@ const SpinningGlobe = () => {
     const worldTextureUrl = 'https://raw.githubusercontent.com/turban/webgl-earth/master/images/2_no_clouds_4k.jpg';
     return (
         <div className="w-24 h-24">
-            <div className="w-full h-full rounded-full animate-spin-slow globe-bg" style={{ 
+            <div className="w-full h-full rounded-full animate-spin-slow globe-bg" style={{
                 backgroundImage: `url(${worldTextureUrl})`,
                 backgroundSize: '200% 100%',
                 boxShadow: 'inset 10px 0 20px rgba(0,0,0,0.2), 0 0 20px 2px rgba(6, 182, 212, 0.3)'
@@ -376,7 +376,7 @@ const LoginPage = ({ onLogin }) => {
             setError('Login ou senha incorreta.');
         }
     };
-    
+
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
             handleLogin();
@@ -387,16 +387,16 @@ const LoginPage = ({ onLogin }) => {
         <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 p-4">
             <div className="w-full max-w-sm">
                 <img src={userLogoUrl} alt="Mercocamp Logo" className="w-48 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/192x100/e2e8f0/0d9488?text=Mercocamp'; }} />
-                
+
                 <div className="space-y-4">
-                    <input 
+                    <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Login"
                         className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
-                    <input 
+                    <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -436,7 +436,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
         { id: 'CD CARIACICA', label: 'CD Cariacica', icon: <Building /> },
         { id: 'CD VIANA', label: 'CD Viana', icon: <Building /> },
         { id: 'CD CIVIT', label: 'CD Civit', icon: <Building /> },
-        { id: 'ANALISE', label: 'Análise Individual', icon: <Search /> },
+        { id: 'VISAO_360', label: 'Visão 360° do Cliente', icon: <Search /> },
     ];
 
     return (
@@ -467,7 +467,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
                     {menuOptions.map(opt => (
                         <button
                             key={opt.id}
-                            onClick={() => onSelect(opt.id === 'ANALISE' ? 'ANALISE' : 'DASHBOARD', opt.id)}
+                            onClick={() => onSelect(opt.id === 'VISAO_360' ? 'VISAO_360' : 'DASHBOARD', opt.id)}
                             className="p-6 bg-slate-50 rounded-xl flex flex-col items-center justify-center gap-3 text-center hover:bg-white hover:shadow-lg hover:scale-105 transform transition-all duration-300 border border-slate-200"
                         >
                             <div className="text-teal-500">{React.cloneElement(opt.icon, { size: 32 })}</div>
@@ -482,7 +482,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
 
 
 // Página do Dashboard
-const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClick }) => {
+const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClick, onClientClick }) => {
     const [filterType, setFilterType] = useState('competencia');
     const [competencias, setCompetencias] = useState([]);
     const [selectedCompetencia, setSelectedCompetencia] = useState('');
@@ -507,16 +507,16 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
             if (comps.length > 0) setSelectedCompetencia(comps[0]);
         }
     }, [data]);
-    
+
     useEffect(() => {
         setAiSummary('');
     }, [dashboardId, selectedCompetencia, dateRange, filterType]);
 
     const { filteredData, globalTotal, previousPeriodData } = useMemo(() => {
         if (!data) return { filteredData: [], globalTotal: 0, previousPeriodData: [] };
-        
+
         let currentPeriodData, previousPeriodDataResult;
-        
+
         if (filterType === 'competencia') {
             currentPeriodData = data.filter(d => d.Competencia === selectedCompetencia);
             const comps = [...new Set(data.map(d => d.Competencia))].filter(Boolean).sort((a, b) => {
@@ -533,7 +533,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
             const prevMonthEnd = new Date(dateRange.start.getFullYear(), dateRange.start.getMonth(), 0);
             previousPeriodDataResult = data.filter(d => d.EmissaoDate && d.EmissaoDate >= prevMonthStart && d.EmissaoDate <= prevMonthEnd);
         }
-        
+
         const globalTotal = currentPeriodData.reduce((acc, d) => acc + d.Vlr_Titulo, 0);
 
         const cdMap = {
@@ -543,7 +543,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
             'CD CIVIT': ['CD CIVIT']
         };
         const locations = cdMap[dashboardId] || [];
-        
+
         const filtered = dashboardId === 'GLOBAL' ? currentPeriodData : currentPeriodData.filter(d => locations.includes(d.Lotacao));
         const prevFiltered = dashboardId === 'GLOBAL' ? previousPeriodDataResult : previousPeriodDataResult.filter(d => locations.includes(d.Lotacao));
 
@@ -592,11 +592,14 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         filteredData
             .filter(d => d.Tipo_Resumido === 'Armazenagem')
             .forEach(d => {
-                clientTotals[d.Cliente] = (clientTotals[d.Cliente] || 0) + d.Vlr_Titulo;
+                 if (!clientTotals[d.Cliente]) {
+                    clientTotals[d.Cliente] = { value: 0, Codigo: d.Codigo, Cliente: d.Cliente };
+                }
+                clientTotals[d.Cliente].value += d.Vlr_Titulo;
             });
 
-        const sortedClients = Object.entries(clientTotals).sort(([, a], [, b]) => b - a);
-        
+        const sortedClients = Object.values(clientTotals).sort((a, b) => b.value - a.value);
+
         const totalClients = sortedClients.length;
         let topList = [];
         let bottomList = [];
@@ -615,6 +618,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         return { top5: topList, bottom5: bottomList };
     }, [filteredData]);
 
+
     const scoreDistribution = useMemo(() => {
         const uniqueClients = [...new Map(filteredData.map(item => [item.Cliente, item])).values()];
         const distribution = { 'Bom Pagador': [], 'Pagador em Alerta': [], 'Inadimplente': [] };
@@ -623,12 +627,12 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
             const clientInvoices = filteredData.filter(f => f.Cliente === client.Cliente);
             const totalFaturado = clientInvoices.reduce((acc, curr) => acc + curr.Vlr_Titulo, 0);
             if (distribution[score]) {
-                distribution[score].push({ name: client.Cliente, total: totalFaturado });
+                distribution[score].push({ name: client.Cliente, total: totalFaturado, Codigo: client.Codigo });
             }
         });
         return distribution;
     }, [filteredData, data]);
-    
+
     const handleScoreCardClick = (title, data) => {
         setScoreModal({ isOpen: true, title, data });
     };
@@ -637,7 +641,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         setIsAiLoading(true);
         setAiSummary('');
         const periodo = filterType === 'competencia' ? `na competência ${selectedCompetencia}` : `no período de ${dateRange.start.toLocaleDateString('pt-BR')} a ${dateRange.end.toLocaleDateString('pt-BR')}`;
-        
+
         let comparisonText = "Não há dados do período anterior para comparação.";
         if (previousPeriodKpis && previousPeriodKpis.count > 0) {
             comparisonText = `Compare com os dados do período anterior:
@@ -645,17 +649,17 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
             - Faturamento de Armazenagem Anterior: ${formatCurrency(previousPeriodKpis.armazenagem)}.
             - Faturamento de Aluguel Anterior: ${formatCurrency(previousPeriodKpis.aluguel)}.`;
         }
-    
+
         const prompt = `Você é um analista financeiro sênior da empresa de logística Mercocamp. Analise os seguintes dados de faturamento para o ${dashboardId} ${periodo}.
         Dados do Período Atual:
         - Faturamento Total: ${formatCurrency(kpis.cdTotal.value)} em ${kpis.cdTotal.count} títulos.
         - Faturamento de Armazenagem: ${formatCurrency(kpis.armazenagem.value)} em ${kpis.armazenagem.count} títulos.
         - Faturamento de Aluguel: ${formatCurrency(kpis.aluguel.value)} em ${kpis.aluguel.count} títulos.
         - Representação no Faturamento Global: ${kpis.percentage.toFixed(2)}%.
-    
+
         Dados para Comparação:
         ${comparisonText}
-    
+
         Com base na comparação, gere um resumo executivo em um único parágrafo. Destaque se houve crescimento ou queda, e, se possível, infira as causas (ex: aumento no valor médio por fatura, mudança na quantidade de clientes/títulos em armazenagem ou aluguel). Seja direto e focado em insights para um gestor.`;
 
         const summary = await callGeminiAPI(prompt);
@@ -671,9 +675,9 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         const totalAtrasado = filteredData
             .filter(d => d.Status_titulo === 'Atrasado' || d.Status_titulo === 'Em Aberto')
             .reduce((acc, d) => acc + d.Vlr_Receber, 0);
-        
+
         const percentualAtrasado = (totalAtrasado / totalFaturado) * 100;
-        
+
         // Fórmula do Rating: (Peso da Produção) - (Peso da Inadimplência)
         const score = (producao * 0.7) - (percentualAtrasado * 1.3);
 
@@ -689,14 +693,18 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         filteredData
             .filter(d => d.Vlr_Receber > 0)
             .forEach(d => {
-                devedores[d.Cliente] = (devedores[d.Cliente] || 0) + d.Vlr_Receber;
+                if (!devedores[d.Cliente]) {
+                    devedores[d.Cliente] = { value: 0, Codigo: d.Codigo, Cliente: d.Cliente };
+                }
+                devedores[d.Cliente].value += d.Vlr_Receber;
             });
-        return Object.entries(devedores).sort(([,a],[,b]) => b - a);
+        return Object.values(devedores).sort((a,b) => b.value - a.value);
     }, [filteredData]);
+
 
     if (loading) return <div className="w-full h-full flex items-center justify-center bg-slate-100 text-gray-800">Carregando dados...</div>;
     if (error) return <div className="w-full h-full flex items-center justify-center text-red-500 bg-slate-100">{error}</div>;
-    
+
     return (
         <div className="bg-slate-100 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
             <GeminiButton onClick={onGeminiClick} />
@@ -740,7 +748,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                 <StatCard icon={<DollarSign size={24} />} title="Faturado (Total CD)" quantity={kpis.cdTotal.count} value={formatCurrency(kpis.cdTotal.value)} />
                 <StatCard icon={<Percent size={24} />} title="% Faturamento Global" value={`${kpis.percentage.toFixed(2)}%`} subValue={`de ${formatCurrency(globalTotal)}`} />
             </div>
-            
+
             <StyledCard className="p-4 mb-6">
                  <h3 className="font-semibold mb-4 text-lg text-gray-800">Clientes Faturados</h3>
                  <div className="overflow-y-auto h-[240px] pr-2">
@@ -748,7 +756,9 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                         const score = getClientScore(item.Cliente, data);
                         return (
                             <div key={item.id} className="grid grid-cols-4 items-center gap-4 p-2 rounded-lg hover:bg-slate-50 text-sm">
-                                <p className="font-semibold text-gray-800 col-span-2 truncate">{item.Cliente}</p>
+                                <button onClick={() => onClientClick(item)} className="col-span-2 truncate text-left font-semibold text-gray-800 cursor-pointer">
+                                  {item.Cliente}
+                                </button>
                                 <p className="text-gray-500">Venc: {item.VencimentoDate ? item.VencimentoDate.toLocaleDateString('pt-BR') : 'N/A'}</p>
                                 <div className="flex justify-between items-center">
                                     <p className="font-bold text-teal-600">{formatCurrency(item.Vlr_Titulo)}</p>
@@ -759,15 +769,15 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                     })}
                  </div>
             </StyledCard>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <StyledCard className="p-4">
                     <h3 className="font-semibold mb-4 text-lg text-green-600">Melhores Clientes (Armazenagem)</h3>
-                    <ul>{topBottomClientes.top5.map(([name, value]) => (<li key={name} className="flex justify-between items-center py-1 border-b border-slate-200"><span className="text-gray-700 text-sm">{name}</span><span className="font-semibold text-green-600 text-sm">{formatCurrency(value)}</span></li>))}</ul>
+                    <ul>{topBottomClientes.top5.map((client) => (<li key={client.Codigo} className="flex justify-between items-center py-1 border-b border-slate-200"><button onClick={() => onClientClick(client)} className="text-gray-700 text-sm text-left cursor-pointer">{client.Cliente}</button><span className="font-semibold text-green-600 text-sm">{formatCurrency(client.value)}</span></li>))}</ul>
                 </StyledCard>
                 <StyledCard className="p-4">
                     <h3 className="font-semibold mb-4 text-lg text-red-600">Piores Clientes (Armazenagem)</h3>
-                     <ul>{topBottomClientes.bottom5.map(([name, value]) => (<li key={name} className="flex justify-between items-center py-1 border-b border-slate-200"><span className="text-gray-700 text-sm">{name}</span><span className="font-semibold text-red-600 text-sm">{formatCurrency(value)}</span></li>))}</ul>
+                    <ul>{topBottomClientes.bottom5.map((client) => (<li key={client.Codigo} className="flex justify-between items-center py-1 border-b border-slate-200"><button onClick={() => onClientClick(client)} className="text-gray-700 text-sm text-left cursor-pointer">{client.Cliente}</button><span className="font-semibold text-red-600 text-sm">{formatCurrency(client.value)}</span></li>))}</ul>
                 </StyledCard>
             </div>
 
@@ -803,10 +813,10 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                 <StyledCard className="p-4">
                     <h3 className="font-semibold mb-4 text-lg text-gray-800">Saldo Devedor por Cliente</h3>
                     <div className="overflow-y-auto h-32 pr-2">
-                        {saldoDevedorPorCliente.length > 0 ? saldoDevedorPorCliente.map(([cliente, valor]) => (
-                            <div key={cliente} className="flex justify-between items-center p-2 rounded-lg hover:bg-slate-50 text-sm">
-                                <p className="font-semibold text-gray-800 truncate">{cliente}</p>
-                                <p className="font-bold text-red-600">{formatCurrency(valor)}</p>
+                        {saldoDevedorPorCliente.length > 0 ? saldoDevedorPorCliente.map((client) => (
+                            <div key={client.Codigo} className="flex justify-between items-center p-2 rounded-lg hover:bg-slate-50 text-sm">
+                                <button onClick={() => onClientClick(client)} className="font-semibold text-gray-800 truncate text-left cursor-pointer">{client.Cliente}</button>
+                                <p className="font-bold text-red-600">{formatCurrency(client.value)}</p>
                             </div>
                         )) : <p className="text-gray-500 text-center mt-8">Nenhum saldo devedor no período.</p>}
                     </div>
@@ -828,12 +838,12 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                     </LineChart>
                 </ResponsiveContainer>
             </StyledCard>
-            
+
             <Modal show={scoreModal.isOpen} onClose={() => setScoreModal({isOpen: false, title: '', data: []})} title={scoreModal.title}>
-                <div className="max-h-96 overflow-y-auto">
+                 <div className="max-h-96 overflow-y-auto">
                     {scoreModal.data.length > 0 ? scoreModal.data.map(client => (
-                        <div key={client.name} className="flex justify-between items-center p-2 rounded-lg hover:bg-slate-100">
-                            <p className="text-gray-800">{client.name}</p>
+                        <div key={client.Codigo} className="flex justify-between items-center p-2 rounded-lg hover:bg-slate-100">
+                           <button onClick={() => { onClientClick(client); setScoreModal({isOpen: false, title: '', data: []}); }} className="text-gray-800 text-left cursor-pointer">{client.name}</button>
                             <p className="text-gray-600">Total Faturado: {formatCurrency(client.total)}</p>
                         </div>
                     )) : <p className="text-gray-500 text-center">Nenhum cliente nesta categoria.</p>}
@@ -843,12 +853,19 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
     );
 };
 
-// Página de Análise Individual
-const AnalysisPage = ({ data, loading, error, onBack, onGeminiClick }) => {
+// Página de Visão 360° do Cliente (Antiga Análise Individual)
+const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClient }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedClient, setSelectedClient] = useState(null);
+    const [selectedClient, setSelectedClient] = useState(initialClient || null);
     const [aiProfile, setAiProfile] = useState('');
     const [isAiLoading, setIsAiLoading] = useState(false);
+
+    useEffect(() => {
+        // Se um cliente inicial é passado, define ele como o selecionado
+        if (initialClient) {
+            setSelectedClient(initialClient);
+        }
+    }, [initialClient]);
 
     const clients = useMemo(() => {
         if (!data) return [];
@@ -897,7 +914,7 @@ const AnalysisPage = ({ data, loading, error, onBack, onGeminiClick }) => {
         setSearchTerm('');
         setAiProfile('');
     }
-    
+
     const filteredClients = useMemo(() => {
         if (!searchTerm) return [];
         return clients.filter(c => c.Cliente.toLowerCase().includes(searchTerm.toLowerCase()) || c.Codigo.toString().includes(searchTerm)).slice(0, 5);
@@ -924,9 +941,9 @@ const AnalysisPage = ({ data, loading, error, onBack, onGeminiClick }) => {
         - Cliente desde: ${clientAnalysis.firstInvoiceDate}.
         - Lotação principal: ${clientAnalysis.lotacao}.
         - Comparativo de faturamento médio anual: ${growthComparison}
-    
+
         Descreva o comportamento de pagamento do cliente, comente sobre sua evolução de faturamento (se está crescendo, estável ou diminuindo com base nos dados anuais) e forneça uma recomendação geral em um parágrafo conciso e profissional.`;
-        
+
         const profile = await callGeminiAPI(prompt);
         setAiProfile(profile);
         setIsAiLoading(false);
@@ -937,10 +954,10 @@ const AnalysisPage = ({ data, loading, error, onBack, onGeminiClick }) => {
          <div className="bg-slate-100 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
             <GeminiButton onClick={onGeminiClick} />
             <header className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Análise Individual de Cliente</h1>
+                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Visão 360° do Cliente</h1>
                 <button onClick={onBack} className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors"><Home size={20} /> Menu</button>
             </header>
-            
+
             <StyledCard className="p-4 mb-6">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
@@ -952,7 +969,7 @@ const AnalysisPage = ({ data, loading, error, onBack, onGeminiClick }) => {
                     )}
                 </div>
             </StyledCard>
-            
+
             {selectedClient && clientAnalysis ? (
                 <div className="space-y-6">
                     <StyledCard className="p-6">
@@ -1008,33 +1025,42 @@ const AnalysisPage = ({ data, loading, error, onBack, onGeminiClick }) => {
                     </div>
                 )
             )}
-         </div>
+       </div>
     );
 }
 
 
 // Componente Principal da Aplicação
 export default function App() {
-    const [page, setPage] = useState('LOGIN'); // LOGIN, ANIMATING, MENU, DASHBOARD, ANALISE
+    const [page, setPage] = useState('LOGIN'); // LOGIN, ANIMATING, MENU, DASHBOARD, VISAO_360
     const [dashboardId, setDashboardId] = useState(null);
     const { data, loading, error } = useData();
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [selectedClientForProfile, setSelectedClientForProfile] = useState(null);
 
     const handleSelect = (pageType, id) => {
         setDashboardId(id);
         setPage(pageType);
+        setSelectedClientForProfile(null); // Limpa o cliente selecionado ao navegar pelo menu
+    };
+
+    const handleNavigateToProfile = (client) => {
+        setSelectedClientForProfile(client);
+        setPage('VISAO_360');
     };
 
     const handleBackToMenu = () => {
         setPage('MENU');
         setDashboardId(null);
+        setSelectedClientForProfile(null);
     };
 
     const handleLogout = () => {
         setPage('LOGIN');
         setDashboardId(null);
+        setSelectedClientForProfile(null);
     }
-    
+
     const handleGeminiClick = () => setIsChatOpen(prev => !prev);
     const handleGeminiClose = () => setIsChatOpen(false);
 
@@ -1051,12 +1077,16 @@ export default function App() {
             const filtered = dashboardId === 'GLOBAL' ? data : data.filter(d => locations.includes(d.Lotacao));
             return { chatDataContext: filtered, chatContextName: dashboardId };
         }
-        // Poderíamos adicionar contexto para a página de Análise aqui se quiséssemos
+        // Contexto para a Visão 360
+        if (page === 'VISAO_360' && selectedClientForProfile) {
+             const clientData = data.filter(d => d.Codigo === selectedClientForProfile.Codigo);
+             return { chatDataContext: clientData, chatContextName: `Visão 360° de ${selectedClientForProfile.Cliente}` };
+        }
         return { chatDataContext: data, chatContextName: "Geral" };
-    }, [page, dashboardId, data]);
+    }, [page, dashboardId, data, selectedClientForProfile]);
 
     const renderPage = () => {
-        if (loading) {
+        if (loading && page !== 'LOGIN') { // Permite que a tela de login apareça enquanto os dados carregam em segundo plano
             return <div className="w-full h-full flex items-center justify-center bg-slate-100 text-gray-800">Carregando dados da planilha...</div>;
         }
         if (error) {
@@ -1074,9 +1104,9 @@ export default function App() {
             case 'MENU':
                 return <MenuPage onSelect={handleSelect} onLogout={handleLogout} onGeminiClick={handleGeminiClick} />;
             case 'DASHBOARD':
-                return <DashboardPage data={data} loading={loading} error={error} dashboardId={dashboardId} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} />;
-            case 'ANALISE':
-                return <AnalysisPage data={data} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} />;
+                return <DashboardPage data={data} loading={loading} error={error} dashboardId={dashboardId} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} onClientClick={handleNavigateToProfile} />;
+            case 'VISAO_360':
+                return <Visao360Page data={data} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} initialClient={selectedClientForProfile} />;
             default:
                 return <LoginPage onLogin={() => setPage('ANIMATING')} />;
         }
@@ -1087,7 +1117,7 @@ export default function App() {
             <style>{`
                 @keyframes spin-slow { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
                 .globe-bg { animation: spin-slow 40s linear infinite; }
-                
+
                 @keyframes takeoff-center {
                     0% {
                         transform: translate(0, 0) rotate(0deg);
@@ -1127,13 +1157,12 @@ export default function App() {
                     opacity: 1;
                 }
             `}</style>
-            
+
             {renderPage()}
 
-            <GeminiButton onClick={handleGeminiClick} />
-            <ChatModal 
-                show={isChatOpen} 
-                onClose={handleGeminiClose} 
+            <ChatModal
+                show={isChatOpen}
+                onClose={handleGeminiClose}
                 dataContext={chatDataContext}
                 contextName={chatContextName}
             />
