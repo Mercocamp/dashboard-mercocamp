@@ -93,7 +93,7 @@ const useClientData = () => {
     useEffect(() => {
         const SPREADSHEET_ID = '1QZ5t4RR1Sd4JP5M6l4cyh7Vyr3ruQiA_EF9hNYVk2NQ';
         const API_KEY = 'AIzaSyDESwQr8FkkWk1k2ybbbO3bRwH0JlxdfDw';
-        const RANGE = 'ClienteCD!A2:O'; // Colunas de A a O
+        const RANGE = 'ClienteCD!A2:P'; // Colunas de A a P para incluir o Mínimo de Contrato
 
         const fetchData = async () => {
             setLoading(true);
@@ -105,7 +105,7 @@ const useClientData = () => {
                 const result = await response.json();
                 const rows = result.values || [];
                 
-                const headers = ['Codigo', 'Cliente', 'CNPJ', 'Email', 'Endereco', 'Bairro', 'Cidade', 'UF', 'CEP', 'Contato', 'TipoFatura', 'Perc_Valr', 'VlrAluguel', 'AdValorem', 'Segmento'];
+                const headers = ['Codigo', 'Cliente', 'CNPJ', 'Email', 'Endereco', 'Bairro', 'Cidade', 'UF', 'CEP', 'Contato', 'TipoFatura', 'Perc_Valr', 'VlrAluguel', 'AdValorem', 'Segmento', 'MinimoContrato'];
                 
                 const processedData = rows.map(row => {
                     const rowData = {};
@@ -114,8 +114,6 @@ const useClientData = () => {
                     });
                     return rowData;
                 }).filter(client => {
-                    // *** CORREÇÃO IMPORTANTE ***
-                    // Ignora qualquer linha que não tenha um código de cliente válido.
                     const code = parseInt(client.Codigo, 10);
                     return !isNaN(code);
                 }).map(client => ({
@@ -181,8 +179,6 @@ const useData = () => {
                     headers.forEach((header, index) => { rowData[header] = row[index] || null; });
                     return rowData;
                 }).filter(d => {
-                    // *** CORREÇÃO IMPORTANTE ***
-                    // Garante que a linha tem um código válido e uma data de emissão válida antes de processar.
                     const code = parseInt(d.Codigo, 10);
                     const emissionDate = parseBrDate(d.Emissao);
                     return !isNaN(code) && emissionDate && emissionDate >= twoYearsAgo;
@@ -1029,7 +1025,7 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
             - Média de dias em atraso (quando ocorre): ${clientAnalysis.avgDelay} dias.
             - Cliente desde: ${clientAnalysis.firstInvoiceDate}.
             - Segmento: ${currentClientDetails.Segmento}.
-            - Contrato: Fatura do tipo "${currentClientDetails.TipoFatura}" com valor/percentual de ${formatPercValr(currentClientDetails.TipoFatura, currentClientDetails.Perc_Valr)}, Ad Valorem de ${currentClientDetails.AdValorem} e Aluguel de ${formatCurrency(currentClientDetails.VlrAluguel)}.
+            - Contrato: Fatura do tipo "${currentClientDetails.TipoFatura}" com valor/percentual de ${formatPercValr(currentClientDetails.TipoFatura, currentClientDetails.Perc_Valr)}, Ad Valorem de ${currentClientDetails.AdValorem}, Aluguel de ${formatCurrency(currentClientDetails.VlrAluguel)} e Mínimo de Contrato de ${formatCurrency(currentClientDetails.MinimoContrato)}.
 
             Descreva o comportamento de pagamento do cliente, comente sobre sua evolução de faturamento e forneça uma recomendação geral em um parágrafo conciso e profissional.`;
 
@@ -1080,6 +1076,7 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
                                             <span>{currentClientDetails.TipoFatura}: <span className="font-semibold text-gray-800">{formatPercValr(currentClientDetails.TipoFatura, currentClientDetails.Perc_Valr)}</span></span>
                                             <span className="text-gray-300">|</span>
                                             <span>Ad Valorem: <span className="font-semibold text-gray-800">{currentClientDetails.AdValorem}</span></span>
+                                            {currentClientDetails.MinimoContrato && <><span className="text-gray-300">|</span><span>Mínimo Contrato: <span className="font-semibold text-gray-800">{formatCurrency(currentClientDetails.MinimoContrato)}</span></span></>}
                                         </div>
                                     )}
                                 </div>
