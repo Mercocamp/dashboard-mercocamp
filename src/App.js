@@ -96,11 +96,17 @@ const useClientData = () => {
                     headers.forEach((header, index) => {
                         rowData[header] = row[index] || null;
                     });
-                    return {
-                        ...rowData,
-                        Codigo: parseInt(rowData.Codigo, 10)
-                    };
-                });
+                    return rowData;
+                }).filter(client => {
+                    // *** CORREÇÃO IMPORTANTE ***
+                    // Ignora qualquer linha que não tenha um código de cliente válido.
+                    const code = parseInt(client.Codigo, 10);
+                    return !isNaN(code);
+                }).map(client => ({
+                    ...client,
+                    Codigo: parseInt(client.Codigo, 10)
+                }));
+
                 setClientDetails(processedData);
             } catch (e) {
                 console.error(e);
@@ -158,7 +164,13 @@ const useData = () => {
                     const rowData = {};
                     headers.forEach((header, index) => { rowData[header] = row[index] || null; });
                     return rowData;
-                }).filter(d => parseBrDate(d.Emissao) && parseBrDate(d.Emissao) >= twoYearsAgo)
+                }).filter(d => {
+                    // *** CORREÇÃO IMPORTANTE ***
+                    // Garante que a linha tem um código válido e uma data de emissão válida antes de processar.
+                    const code = parseInt(d.Codigo, 10);
+                    const emissionDate = parseBrDate(d.Emissao);
+                    return !isNaN(code) && emissionDate && emissionDate >= twoYearsAgo;
+                })
                 .map((d, index) => ({
                     ...d,
                     id: index,
