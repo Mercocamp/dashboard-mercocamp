@@ -2,6 +2,22 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
 
+// --- NOVO Componente de Spinner de Carregamento ---
+const LoadingSpinner = () => (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
+        <div className="spinner">
+            <div className="dot1"></div>
+            <div className="dot2"></div>
+            <div className="dot3"></div>
+            <div className="dot4"></div>
+            <div className="dot5"></div>
+            <div className="dot6"></div>
+        </div>
+        <p className="mt-4 text-gray-600">Carregando dados da planilha...</p>
+    </div>
+);
+
+
 // --- Componente da Logo Simples (Imagem Estática) ---
 function ClientLogo({ clientCode, clientName }) {
     // Se não houver código ou nome, não renderiza nada para evitar erros.
@@ -375,9 +391,10 @@ const LogisticsIntroAnimation = ({ onAnimationEnd }) => {
             return;
         }
 
+        // --- ANIMAÇÃO ACELERADA ---
         const timer = setTimeout(() => {
             setIndex(prev => prev + 1);
-        }, 1000); // Duração de cada etapa da animação (acelerado)
+        }, 600); // Duração de cada etapa reduzida para 0.6 segundos
 
         return () => clearTimeout(timer);
     }, [index, onAnimationEnd, stages.length]);
@@ -1125,8 +1142,8 @@ export default function App() {
     }, [page, dashboardId, data, selectedClientForProfile]);
 
     const renderPage = () => {
-        if (loading && page !== 'LOGIN') { // Permite que a tela de login apareça enquanto os dados carregam em segundo plano
-            return <div className="w-full h-full flex items-center justify-center bg-slate-100 text-gray-800">Carregando dados da planilha...</div>;
+        if (loading && page !== 'LOGIN') {
+            return <LoadingSpinner />;
         }
         if (error) {
             return <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-red-500 p-4 text-center">
@@ -1158,14 +1175,8 @@ export default function App() {
                 .globe-bg { animation: spin-slow 40s linear infinite; }
 
                 @keyframes takeoff-center {
-                    0% {
-                        transform: translate(0, 0) rotate(0deg);
-                        opacity: 1;
-                    }
-                    100% {
-                        transform: translate(80vw, -80vh) rotate(20deg);
-                        opacity: 0;
-                    }
+                    0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+                    100% { transform: translate(80vw, -80vh) rotate(20deg); opacity: 0; }
                 }
                 .animate-takeoff-center {
                     animation: takeoff-center 1.5s ease-in forwards;
@@ -1195,6 +1206,37 @@ export default function App() {
                     visibility: visible;
                     opacity: 1;
                 }
+                /* Estilos para o novo Spinner */
+                .spinner {
+                    position: relative;
+                    width: 56px;
+                    height: 56px;
+                }
+                .spinner div {
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    animation: spinner-anim 1.2s linear infinite;
+                }
+                .spinner .dot1 { animation-delay: 0s; background: #0d9488; }
+                .spinner .dot2 { animation-delay: -0.1s; background: #0d9488; }
+                .spinner .dot3 { animation-delay: -0.2s; background: #0d9488; }
+                .spinner .dot4 { animation-delay: -0.3s; background: #4f46e5; }
+                .spinner .dot5 { animation-delay: -0.4s; background: #4f46e5; }
+                .spinner .dot6 { animation-delay: -0.5s; background: #4f46e5; }
+                
+                @keyframes spinner-anim {
+                    0%, 20%, 80%, 100% { transform: scale(1); opacity: 1; }
+                    50% { transform: scale(1.5); opacity: 0.5; }
+                }
+                .spinner div:nth-child(1) { top: 0; left: 23px; }
+                .spinner div:nth-child(2) { top: 8px; left: 42px; }
+                .spinner div:nth-child(3) { top: 23px; left: 46px; }
+                .spinner div:nth-child(4) { top: 38px; left: 42px; }
+                .spinner div:nth-child(5) { top: 46px; left: 23px; }
+                .spinner div:nth-child(6) { top: 38px; left: 8px; }
+
             `}</style>
 
             {renderPage()}
