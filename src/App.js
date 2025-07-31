@@ -424,9 +424,9 @@ const LoginPage = ({ onLogin }) => {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 p-4">
-            <div className="w-full max-w-sm">
-                <img src={userLogoUrl} alt="Mercocamp Logo" className="w-64 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/256x100/e2e8f0/0d9488?text=Mercocamp'; }} />
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 p-4">
+            <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm">
+                <img src={userLogoUrl} alt="Mercocamp Logo" className="w-48 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/192x100/e2e8f0/0d9488?text=Mercocamp'; }} />
 
                 <div className="space-y-4">
                     <input
@@ -434,7 +434,7 @@ const LoginPage = ({ onLogin }) => {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Login"
-                        className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                     <input
                         type="password"
@@ -442,7 +442,7 @@ const LoginPage = ({ onLogin }) => {
                         onChange={(e) => setPassword(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Senha"
-                        className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                 </div>
 
@@ -480,7 +480,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
     ];
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-gray-800 p-4">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-gray-800 p-4">
             <GeminiButton onClick={onGeminiClick} />
             <div className="absolute top-5 right-5 text-right">
                 <p className="font-semibold text-xl text-gray-700">{time.toLocaleTimeString()}</p>
@@ -627,7 +627,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         filteredData
             .filter(d => d.Tipo_Resumido === 'Armazenagem')
             .forEach(d => {
-                 if (!clientTotals[d.Cliente]) {
+                if (!clientTotals[d.Cliente]) {
                     clientTotals[d.Cliente] = { value: 0, Codigo: d.Codigo, Cliente: d.Cliente };
                 }
                 clientTotals[d.Cliente].value += d.Vlr_Titulo;
@@ -680,22 +680,22 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
         let comparisonText = "Não há dados do período anterior para comparação.";
         if (previousPeriodKpis && previousPeriodKpis.count > 0) {
             comparisonText = `Compare com os dados do período anterior:
-            - Faturamento Total Anterior: ${formatCurrency(previousPeriodKpis.total)} em ${previousPeriodKpis.count} títulos.
-            - Faturamento de Armazenagem Anterior: ${formatCurrency(previousPeriodKpis.armazenagem)}.
-            - Faturamento de Aluguel Anterior: ${formatCurrency(previousPeriodKpis.aluguel)}.`;
+                - Faturamento Total Anterior: ${formatCurrency(previousPeriodKpis.total)} em ${previousPeriodKpis.count} títulos.
+                - Faturamento de Armazenagem Anterior: ${formatCurrency(previousPeriodKpis.armazenagem)}.
+                - Faturamento de Aluguel Anterior: ${formatCurrency(previousPeriodKpis.aluguel)}.`;
         }
 
         const prompt = `Você é um analista financeiro sênior da empresa de logística Mercocamp. Analise os seguintes dados de faturamento para o ${dashboardId} ${periodo}.
-        Dados do Período Atual:
-        - Faturamento Total: ${formatCurrency(kpis.cdTotal.value)} em ${kpis.cdTotal.count} títulos.
-        - Faturamento de Armazenagem: ${formatCurrency(kpis.armazenagem.value)} em ${kpis.armazenagem.count} títulos.
-        - Faturamento de Aluguel: ${formatCurrency(kpis.aluguel.value)} em ${kpis.aluguel.count} títulos.
-        - Representação no Faturamento Global: ${kpis.percentage.toFixed(2)}%.
+            Dados do Período Atual:
+            - Faturamento Total: ${formatCurrency(kpis.cdTotal.value)} em ${kpis.cdTotal.count} títulos.
+            - Faturamento de Armazenagem: ${formatCurrency(kpis.armazenagem.value)} em ${kpis.armazenagem.count} títulos.
+            - Faturamento de Aluguel: ${formatCurrency(kpis.aluguel.value)} em ${kpis.aluguel.count} títulos.
+            - Representação no Faturamento Global: ${kpis.percentage.toFixed(2)}%.
 
-        Dados para Comparação:
-        ${comparisonText}
+            Dados para Comparação:
+            ${comparisonText}
 
-        Com base na comparação, gere um resumo executivo em um único parágrafo. Destaque se houve crescimento ou queda, e, se possível, infira as causas (ex: aumento no valor médio por fatura, mudança na quantidade de clientes/títulos em armazenagem ou aluguel). Seja direto e focado em insights para um gestor.`;
+            Com base na comparação, gere um resumo executivo em um único parágrafo. Destaque se houve crescimento ou queda, e, se possível, infira as causas (ex: aumento no valor médio por fatura, mudança na quantidade de clientes/títulos em armazenagem ou aluguel). Seja direto e focado em insights para um gestor.`;
 
         const summary = await callGeminiAPI(prompt);
         setAiSummary(summary);
@@ -764,7 +764,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                         <input type="date" value={dateRange.end.toISOString().split('T')[0]} onChange={(e) => setDateRange(prev => ({...prev, end: new Date(e.target.value)}))} disabled={filterType !== 'data'} className="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50" />
                     </div>
                 </div>
-                 <div className="mt-4 pt-4 border-t border-slate-200">
+                <div className="mt-4 pt-4 border-t border-slate-200">
                     <button onClick={handleGenerateSummary} disabled={isAiLoading} className="w-full flex items-center justify-center gap-2 px-4 py-2 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-lg shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
                         <Sparkles size={18} />
                         {isAiLoading ? 'Analisando...' : '✨ Gerar Análise com IA'}
@@ -785,14 +785,14 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
             </div>
 
             <StyledCard className="p-4 mb-6">
-                 <h3 className="font-semibold mb-4 text-lg text-gray-800">Clientes Faturados</h3>
-                 <div className="overflow-y-auto h-[240px] pr-2">
+                <h3 className="font-semibold mb-4 text-lg text-gray-800">Clientes Faturados</h3>
+                <div className="overflow-y-auto h-[240px] pr-2">
                     {filteredData.sort((a,b) => b.Vlr_Titulo - a.Vlr_Titulo).map(item => {
                         const score = getClientScore(item.Cliente, data);
                         return (
                             <div key={item.id} className="grid grid-cols-4 items-center gap-4 p-2 rounded-lg hover:bg-slate-50 text-sm">
                                 <button onClick={() => onClientClick(item)} className="col-span-2 truncate text-left font-semibold text-gray-800 cursor-pointer">
-                                  {item.Cliente}
+                                {item.Cliente}
                                 </button>
                                 <p className="text-gray-500">Venc: {item.VencimentoDate ? item.VencimentoDate.toLocaleDateString('pt-BR') : 'N/A'}</p>
                                 <div className="flex justify-between items-center">
@@ -802,7 +802,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                             </div>
                         )
                     })}
-                 </div>
+                </div>
             </StyledCard>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -875,10 +875,10 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
             </StyledCard>
 
             <Modal show={scoreModal.isOpen} onClose={() => setScoreModal({isOpen: false, title: '', data: []})} title={scoreModal.title}>
-                 <div className="max-h-96 overflow-y-auto">
+                <div className="max-h-96 overflow-y-auto">
                     {scoreModal.data.length > 0 ? scoreModal.data.map(client => (
                         <div key={client.Codigo} className="flex justify-between items-center p-2 rounded-lg hover:bg-slate-100">
-                           <button onClick={() => { onClientClick(client); setScoreModal({isOpen: false, title: '', data: []}); }} className="text-gray-800 text-left cursor-pointer">{client.name}</button>
+                        <button onClick={() => { onClientClick(client); setScoreModal({isOpen: false, title: '', data: []}); }} className="text-gray-800 text-left cursor-pointer">{client.name}</button>
                             <p className="text-gray-600">Total Faturado: {formatCurrency(client.total)}</p>
                         </div>
                     )) : <p className="text-gray-500 text-center">Nenhum cliente nesta categoria.</p>}
@@ -970,14 +970,14 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
         }
 
         const prompt = `Você é um analista de crédito da Mercocamp. Crie um perfil conciso sobre o cliente "${selectedClient.Cliente}" com base nos seguintes dados:
-        - Status de Pagamento: ${clientAnalysis.score.text}.
-        - Média de dias em atraso (quando ocorre): ${clientAnalysis.avgDelay} dias.
-        - Total de faturas no histórico: ${clientAnalysis.totalInvoices}.
-        - Cliente desde: ${clientAnalysis.firstInvoiceDate}.
-        - Lotação principal: ${clientAnalysis.lotacao}.
-        - Comparativo de faturamento médio anual: ${growthComparison}
+            - Status de Pagamento: ${clientAnalysis.score.text}.
+            - Média de dias em atraso (quando ocorre): ${clientAnalysis.avgDelay} dias.
+            - Total de faturas no histórico: ${clientAnalysis.totalInvoices}.
+            - Cliente desde: ${clientAnalysis.firstInvoiceDate}.
+            - Lotação principal: ${clientAnalysis.lotacao}.
+            - Comparativo de faturamento médio anual: ${growthComparison}
 
-        Descreva o comportamento de pagamento do cliente, comente sobre sua evolução de faturamento (se está crescendo, estável ou diminuindo com base nos dados anuais) e forneça uma recomendação geral em um parágrafo conciso e profissional.`;
+            Descreva o comportamento de pagamento do cliente, comente sobre sua evolução de faturamento (se está crescendo, estável ou diminuindo com base nos dados anuais) e forneça uma recomendação geral em um parágrafo conciso e profissional.`;
 
         const profile = await callGeminiAPI(prompt);
         setAiProfile(profile);
@@ -986,7 +986,7 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
 
 
     return (
-         <div className="bg-slate-200 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
+        <div className="bg-slate-200 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
             <GeminiButton onClick={onGeminiClick} />
             <header className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Visão 360° do Cliente</h1>
@@ -1009,7 +1009,7 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
                 <div className="space-y-6">
                     <StyledCard className="p-6">
                         <div className="flex justify-between items-start">
-                             {/* Container Flex para alinhar logo e texto */}
+                            {/* Container Flex para alinhar logo e texto */}
                             <div className="flex items-center gap-4">
                                 <ClientLogo clientCode={selectedClient.Codigo} clientName={selectedClient.Cliente} />
                                 <div>
@@ -1026,7 +1026,7 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
                                 {isAiLoading ? 'Gerando...' : '✨ Gerar Perfil'}
                             </button>
                         </div>
-                         {aiProfile && !isAiLoading && (
+                        {aiProfile && !isAiLoading && (
                             <div className="mt-4 pt-4 border-t border-slate-200 text-gray-600 text-sm">
                                 <p>{aiProfile}</p>
                             </div>
@@ -1049,7 +1049,7 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
                         </StyledCard>
                         <StyledCard className="p-4">
                             <h3 className="font-semibold mb-4 text-lg text-gray-800">Evolução Mensal em {new Date().getFullYear()}</h3>
-                             <ResponsiveContainer width="100%" height={300}>
+                            <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={clientAnalysis.monthlyData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="month" stroke="#64748b" /><YAxis stroke="#64748b" tickFormatter={formatCurrency} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem' }} formatter={(value) => formatCurrency(value)} /><Bar dataKey="total" name="Valor Total" fill="#4f46e5" /></BarChart>
                             </ResponsiveContainer>
                         </StyledCard>
@@ -1064,7 +1064,7 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
                     </div>
                 )
             )}
-       </div>
+    </div>
     );
 }
 
@@ -1118,8 +1118,8 @@ export default function App() {
         }
         // Contexto para a Visão 360
         if (page === 'VISAO_360' && selectedClientForProfile) {
-             const clientData = data.filter(d => d.Codigo === selectedClientForProfile.Codigo);
-             return { chatDataContext: clientData, chatContextName: `Visão 360° de ${selectedClientForProfile.Cliente}` };
+            const clientData = data.filter(d => d.Codigo === selectedClientForProfile.Codigo);
+            return { chatDataContext: clientData, chatContextName: `Visão 360° de ${selectedClientForProfile.Cliente}` };
         }
         return { chatDataContext: data, chatContextName: "Geral" };
     }, [page, dashboardId, data, selectedClientForProfile]);
