@@ -17,7 +17,7 @@ function AnimatingCylinder({ logoUrl }) {
     if (meshRef.current) {
       meshRef.current.rotation.y = initialRotationY;
     }
-  }, []);
+  }, [logoUrl]); // Reinicia a animação quando a logo muda
 
   useFrame(() => {
     if (isAnimating && meshRef.current) {
