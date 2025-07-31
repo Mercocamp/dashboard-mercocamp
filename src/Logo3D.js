@@ -44,15 +44,18 @@ function AnimatingCylinder({ logoUrl, onAnimationComplete }) {
 }
 
 // --- Componente principal que exportamos ---
-export default function Logo3D({ clientCode }) {
-  // IMPORTANTE: Esta lógica assume que o nome do arquivo da logo no Google Cloud
-  // é EXATAMENTE o código do cliente. Ex: "6883.png"
-  const logoUrl = `https://storage.googleapis.com/logos-portal-mercocamp/${clientCode}.png`;
+export default function Logo3D({ clientCode, clientName }) {
+  // Pega a primeira palavra do nome do cliente e converte para MAIÚSCULAS.
+  const simplifiedName = clientName ? clientName.split(' ')[0].toUpperCase() : '';
+  // Monta o nome do arquivo no padrão "CODIGO-NOME"
+  const fileName = `${clientCode}-${simplifiedName}`;
+  
+  // Monta a URL final. Note que NÃO adicionamos .png aqui, pois o nome do objeto no bucket não tem a extensão.
+  const logoUrl = `https://storage.googleapis.com/logos-portal-mercocamp/${fileName}`;
   
   // Imagem de fallback caso a logo do cliente não seja encontrada
   const fallbackLogoUrl = 'https://placehold.co/300x300/e2e8f0/0d9488?text=Logo';
   const [urlToLoad, setUrlToLoad] = useState(logoUrl);
-  const [hasError, setHasError] = useState(false);
 
   // Verifica se a imagem existe, se não, usa a de fallback
   useEffect(() => {
@@ -60,11 +63,9 @@ export default function Logo3D({ clientCode }) {
       img.src = logoUrl;
       img.onload = () => {
           setUrlToLoad(logoUrl);
-          setHasError(false);
       };
       img.onerror = () => {
           setUrlToLoad(fallbackLogoUrl);
-          setHasError(true);
       };
   }, [logoUrl]);
 
