@@ -978,13 +978,14 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
         const yearlyData = Object.values(evolutionByYear).map(y => ({...y, media: y.total/y.count}));
         
         const currentYear = new Date().getFullYear();
-        const evolutionThisYear = clientData.filter(d => d.EmissaoDate && d.EmissaoDate.getFullYear() === currentYear).reduce((acc, d) => {
-            const month = d.EmissaoDate.toLocaleString('pt-BR', { month: 'short' });
-            if (!acc[month]) acc[month] = { month, total: 0 };
-            acc[month].total += d.Vlr_Titulo;
+        const monthlyDataRaw = clientData.filter(d => d.EmissaoDate && d.EmissaoDate.getFullYear() === currentYear).reduce((acc, d) => {
+            const monthIndex = d.EmissaoDate.getMonth();
+            const monthName = d.EmissaoDate.toLocaleString('pt-BR', { month: 'short' });
+            if (!acc[monthIndex]) acc[monthIndex] = { month: monthName, monthIndex, total: 0 };
+            acc[monthIndex].total += d.Vlr_Titulo;
             return acc;
         }, {});
-        const monthlyData = Object.values(evolutionThisYear);
+        const monthlyData = Object.values(monthlyDataRaw).sort((a, b) => a.monthIndex - b.monthIndex);
         
         return { firstInvoiceDate: firstInvoice.EmissaoDate.toLocaleDateString('pt-BR'), lastInvoiceDate: lastInvoice.EmissaoDate.toLocaleDateString('pt-BR'), totalInvoices, aluguelCount, armazenagemCount, avgDelay: avgDelay.toFixed(1), score, lotacao: firstInvoice.Lotacao, yearlyData, monthlyData };
     }, [clientData, selectedClient, data]);
@@ -1006,6 +1007,11 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
         if (isNaN(number) || number === 0) return 'Isento';
         return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
+
+    const formatChartCurrency = (value) => {
+        if (typeof value !== 'number') return value;
+        return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
     
     const formatPercValr = (tipoFatura, percValr) => {
         if (!percValr || String(percValr).trim() === '') return 'Isento';
@@ -1105,13 +1111,13 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
                         <StyledCard className="p-4">
                             <h3 className="font-semibold mb-4 text-lg text-gray-800">Evolução Anual (Valor Médio)</h3>
                             <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={clientAnalysis.yearlyData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="year" stroke="#64748b" /><YAxis stroke="#64748b" tickFormatter={formatCurrency} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem' }} formatter={(value) => formatCurrency(value)} /><Bar dataKey="media" name="Valor Médio" fill="#0d9488" /></BarChart>
+                                <BarChart data={clientAnalysis.yearlyData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="year" stroke="#64748b" /><YAxis stroke="#64748b" tickFormatter={formatChartCurrency} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem' }} formatter={formatChartCurrency} /><Bar dataKey="media" name="Valor Médio" fill="#0d9488" /></BarChart>
                             </ResponsiveContainer>
                         </StyledCard>
                         <StyledCard className="p-4">
                             <h3 className="font-semibold mb-4 text-lg text-gray-800">Evolução Mensal em {new Date().getFullYear()}</h3>
                             <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={clientAnalysis.monthlyData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="month" stroke="#64748b" /><YAxis stroke="#64748b" tickFormatter={formatCurrency} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem' }} formatter={(value) => formatCurrency(value)} /><Bar dataKey="total" name="Valor Total" fill="#4f46e5" /></BarChart>
+                                <BarChart data={clientAnalysis.monthlyData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="month" stroke="#64748b" /><YAxis stroke="#64748b" tickFormatter={formatChartCurrency} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem' }} formatter={formatChartCurrency} /><Bar dataKey="total" name="Valor Total" fill="#4f46e5" /></BarChart>
                             </ResponsiveContainer>
                         </StyledCard>
                     </div>
