@@ -1,7 +1,74 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
-import Logo3D from './Logo3D'; // <-- NOSSA GRANDE IMPORTAÇÃO!
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { TextureLoader, MathUtils } from 'three';
+
+// --- Componente da Logo 3D (Agora dentro do App.js) ---
+
+function AnimatingCylinder({ logoUrl }) {
+  const meshRef = useRef();
+  const texture = useLoader(TextureLoader, logoUrl);
+  const [isAnimating, setIsAnimating] = useState(true);
+  const initialRotationY = Math.PI / 2;
+  const targetRotationY = 0;
+
+  useEffect(() => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y = initialRotationY;
+    }
+  }, []);
+
+  useFrame(() => {
+    if (isAnimating && meshRef.current) {
+      meshRef.current.rotation.y = MathUtils.lerp(meshRef.current.rotation.y, targetRotationY, 0.05);
+      if (Math.abs(meshRef.current.rotation.y - targetRotationY) < 0.01) {
+        meshRef.current.rotation.y = targetRotationY;
+        setIsAnimating(false);
+      }
+    }
+  });
+
+  return (
+    <mesh ref={meshRef}>
+      <cylinderGeometry args={[2, 2, 0.2, 64]} />
+      <meshStandardMaterial map={texture} transparent />
+    </mesh>
+  );
+}
+
+function Logo3D({ clientCode, clientName }) {
+    // VERIFICAÇÃO DE SEGURANÇA: Se não houver código ou nome, não renderiza nada.
+    if (!clientCode || !clientName) {
+        return null; 
+    }
+
+    const simplifiedName = clientName.split(' ')[0].toUpperCase();
+    const fileName = `${clientCode}-${simplifiedName}`;
+    const logoUrl = `https://storage.googleapis.com/logos-portal-mercocamp/${fileName}`;
+    const fallbackLogoUrl = 'https://placehold.co/300x300/e2e8f0/0d9488?text=Logo';
+    const [urlToLoad, setUrlToLoad] = useState(logoUrl);
+
+    useEffect(() => {
+        const img = new Image();
+        img.src = logoUrl;
+        img.onload = () => setUrlToLoad(logoUrl);
+        img.onerror = () => setUrlToLoad(fallbackLogoUrl);
+    }, [logoUrl]);
+
+    return (
+        <div style={{ width: '100px', height: '100px' }}>
+            <Canvas camera={{ position: [0, 0, 3.5], fov: 50 }}>
+                <ambientLight intensity={2.5} />
+                <directionalLight position={[10, 10, 5]} intensity={3} />
+                <Suspense fallback={null}>
+                    <AnimatingCylinder logoUrl={urlToLoad} key={clientCode} />
+                </Suspense>
+            </Canvas>
+        </div>
+    );
+}
+
 
 // URL da logo do usuário.
 const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-files/image_74b444.png';
@@ -1172,5 +1239,4 @@ export default function App() {
                 contextName={chatContextName}
             />
         </main>
-    );
-}
+    )
