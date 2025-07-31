@@ -1001,14 +1001,14 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
     }, [searchTerm, clients]);
 
     const formatCurrency = (value) => {
-        if (value === null || value === undefined) return 'N/A';
-        const number = parseFloat(String(value).replace(',', '.'));
-        if (isNaN(number)) return 'N/A';
+        if (value === null || value === undefined || String(value).trim() === '') return 'Isento';
+        const number = parseFloat(String(value).replace(/[R$\s.]/g, '').replace(',', '.'));
+        if (isNaN(number) || number === 0) return 'Isento';
         return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
     
     const formatPercValr = (tipoFatura, percValr) => {
-        if (!percValr) return null;
+        if (!percValr || String(percValr).trim() === '') return 'Isento';
         if (tipoFatura === 'Percentual') {
             return `${percValr}`;
         }
@@ -1024,8 +1024,8 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
             - Status de Pagamento: ${clientAnalysis.score.text}.
             - Média de dias em atraso (quando ocorre): ${clientAnalysis.avgDelay} dias.
             - Cliente desde: ${clientAnalysis.firstInvoiceDate}.
-            - Segmento: ${currentClientDetails.Segmento}.
-            - Contrato: Fatura do tipo "${currentClientDetails.TipoFatura}" com valor/percentual de ${formatPercValr(currentClientDetails.TipoFatura, currentClientDetails.Perc_Valr)}, Ad Valorem de ${currentClientDetails.AdValorem}, Aluguel de ${formatCurrency(currentClientDetails.VlrAluguel)} e Mínimo de Contrato de ${formatCurrency(currentClientDetails.MinimoContrato)}.
+            - Segmento: ${currentClientDetails.Segmento || 'Não informado'}.
+            - Contrato: Fatura do tipo "${currentClientDetails.TipoFatura}" com valor/percentual de ${formatPercValr(currentClientDetails.TipoFatura, currentClientDetails.Perc_Valr)}, Ad Valorem de ${currentClientDetails.AdValorem || 'Isento'}, Aluguel de ${formatCurrency(currentClientDetails.VlrAluguel)} e Mínimo de Contrato de ${formatCurrency(currentClientDetails.MinimoContrato)}.
 
             Descreva o comportamento de pagamento do cliente, comente sobre sua evolução de faturamento e forneça uma recomendação geral em um parágrafo conciso e profissional.`;
 
@@ -1075,8 +1075,9 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
                                             <span className="text-gray-300">|</span>
                                             <span>{currentClientDetails.TipoFatura}: <span className="font-semibold text-gray-800">{formatPercValr(currentClientDetails.TipoFatura, currentClientDetails.Perc_Valr)}</span></span>
                                             <span className="text-gray-300">|</span>
-                                            <span>Ad Valorem: <span className="font-semibold text-gray-800">{currentClientDetails.AdValorem}</span></span>
-                                            {currentClientDetails.MinimoContrato && <><span className="text-gray-300">|</span><span>Mínimo Contrato: <span className="font-semibold text-gray-800">{formatCurrency(currentClientDetails.MinimoContrato)}</span></span></>}
+                                            <span>Ad Valorem: <span className="font-semibold text-gray-800">{currentClientDetails.AdValorem || 'Isento'}</span></span>
+                                            <span className="text-gray-300">|</span>
+                                            <span>Mínimo Contrato: <span className="font-semibold text-gray-800">{formatCurrency(currentClientDetails.MinimoContrato)}</span></span>
                                         </div>
                                     )}
                                 </div>
