@@ -1,72 +1,87 @@
 import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { TextureLoader, MathUtils } from 'three';
+import * as THREE from 'three';
 
-// --- Componente da Logo 3D (Agora dentro do App.js) ---
-
-function AnimatingCylinder({ logoUrl }) {
-  const meshRef = useRef();
-  const texture = useLoader(TextureLoader, logoUrl);
-  const [isAnimating, setIsAnimating] = useState(true);
-  const initialRotationY = Math.PI / 2;
-  const targetRotationY = 0;
-
-  useEffect(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = initialRotationY;
-    }
-  }, [logoUrl]); // Reinicia a animação quando a logo muda
-
-  useFrame(() => {
-    if (isAnimating && meshRef.current) {
-      meshRef.current.rotation.y = MathUtils.lerp(meshRef.current.rotation.y, targetRotationY, 0.05);
-      if (Math.abs(meshRef.current.rotation.y - targetRotationY) < 0.01) {
-        meshRef.current.rotation.y = targetRotationY;
-        setIsAnimating(false);
-      }
-    }
-  });
-
-  return (
-    <mesh ref={meshRef}>
-      <cylinderGeometry args={[2, 2, 0.2, 64]} />
-      <meshStandardMaterial map={texture} transparent />
-    </mesh>
-  );
-}
-
+// --- Componente da Logo 3D (Reescrito com three.js puro) ---
 function Logo3D({ clientCode, clientName }) {
-    // VERIFICAÇÃO DE SEGURANÇA: Se não houver código ou nome, não renderiza nada.
-    if (!clientCode || !clientName) {
-        return null; 
-    }
-
-    const simplifiedName = clientName.split(' ')[0].toUpperCase();
-    const fileName = `${clientCode}-${simplifiedName}`;
-    const logoUrl = `https://storage.googleapis.com/logos-portal-mercocamp/${fileName}`;
-    const fallbackLogoUrl = 'https://placehold.co/300x300/e2e8f0/0d9488?text=Logo';
-    const [urlToLoad, setUrlToLoad] = useState(logoUrl);
+    const mountRef = useRef(null);
 
     useEffect(() => {
-        const img = new Image();
-        img.src = logoUrl;
-        img.onload = () => setUrlToLoad(logoUrl);
-        img.onerror = () => setUrlToLoad(fallbackLogoUrl);
-    }, [logoUrl]);
+        if (!clientCode || !clientName || !mountRef.current) {
+            return;
+        }
 
-    return (
-        <div style={{ width: '100px', height: '100px' }}>
-            <Canvas camera={{ position: [0, 0, 3.5], fov: 50 }}>
-                <ambientLight intensity={2.5} />
-                <directionalLight position={[10, 10, 5]} intensity={3} />
-                <Suspense fallback={null}>
-                    <AnimatingCylinder logoUrl={urlToLoad} key={clientCode} />
-                </Suspense>
-            </Canvas>
-        </div>
-    );
+        const currentMount = mountRef.current;
+
+        // --- Configuração da Cena 3D ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, currentMount.clientWidth / currentMount.clientHeight, 0.1, 1000);
+        camera.position.z = 3.5;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
+        currentMount.appendChild(renderer.domElement);
+
+        // --- Iluminação ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+        directionalLight.position.set(10, 10, 5);
+        scene.add(directionalLight);
+
+        // --- Lógica da Logo ---
+        const simplifiedName = clientName.split(' ')[0].toUpperCase();
+        const fileName = `${clientCode}-${simplifiedName}`;
+        const logoUrl = `https://storage.googleapis.com/logos-portal-mercocamp/${fileName}`;
+        const fallbackLogoUrl = 'https://placehold.co/300x300/e2e8f0/0d9488?text=Logo';
+
+        const textureLoader = new THREE.TextureLoader();
+        let cylinder;
+
+        const createCylinder = (texture) => {
+            const geometry = new THREE.CylinderGeometry(2, 2, 0.2, 64);
+            const material = new THREE.MeshStandardMaterial({ map: texture, transparent: true });
+            cylinder = new THREE.Mesh(geometry, material);
+            cylinder.rotation.y = Math.PI / 2; // Rotação inicial
+            scene.add(cylinder);
+        };
+
+        textureLoader.load(logoUrl,
+            (texture) => createCylinder(texture),
+            undefined,
+            () => { // On Error
+                textureLoader.load(fallbackLogoUrl, (fallbackTexture) => {
+                    createCylinder(fallbackTexture);
+                });
+            }
+        );
+
+        // --- Animação ---
+        let isAnimating = true;
+        const targetRotationY = 0;
+        const animate = () => {
+            requestAnimationFrame(animate);
+            if (cylinder && isAnimating) {
+                cylinder.rotation.y = THREE.MathUtils.lerp(cylinder.rotation.y, targetRotationY, 0.05);
+                if (Math.abs(cylinder.rotation.y - targetRotationY) < 0.01) {
+                    cylinder.rotation.y = targetRotationY;
+                    isAnimating = false;
+                }
+            }
+            renderer.render(scene, camera);
+        };
+
+        animate();
+
+        // --- Limpeza ---
+        return () => {
+            currentMount.removeChild(renderer.domElement);
+        };
+
+    }, [clientCode, clientName]);
+
+    return <div ref={mountRef} style={{ width: '100px', height: '100px' }} />;
 }
 
 
@@ -1240,3 +1255,4 @@ export default function App() {
             />
         </main>
     )
+}
