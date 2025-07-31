@@ -2,6 +2,22 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
 
+// --- Componente de Spinner de Carregamento ---
+const LoadingSpinner = () => (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
+        <div className="spinner">
+            <div className="dot1"></div>
+            <div className="dot2"></div>
+            <div className="dot3"></div>
+            <div className="dot4"></div>
+            <div className="dot5"></div>
+            <div className="dot6"></div>
+        </div>
+        <p className="mt-4 text-gray-600">Carregando dados da planilha...</p>
+    </div>
+);
+
+
 // --- Componente da Logo Simples (Imagem Estática) ---
 function ClientLogo({ clientCode, clientName }) {
     if (!clientCode || !clientName) {
