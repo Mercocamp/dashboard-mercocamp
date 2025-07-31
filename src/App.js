@@ -424,7 +424,7 @@ const LoginPage = ({ onLogin }) => {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 p-4">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 p-4">
             <div className="w-full max-w-sm">
                 <img src={userLogoUrl} alt="Mercocamp Logo" className="w-64 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/256x100/e2e8f0/0d9488?text=Mercocamp'; }} />
 
@@ -480,7 +480,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
     ];
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-gray-800 p-4">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-gray-800 p-4">
             <GeminiButton onClick={onGeminiClick} />
             <div className="absolute top-5 right-5 text-right">
                 <p className="font-semibold text-xl text-gray-700">{time.toLocaleTimeString()}</p>
@@ -705,7 +705,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
     const { rating, ratingColor } = useMemo(() => {
         const producao = kpis.percentage;
         const totalFaturado = kpis.cdTotal.value;
-        if (totalFaturado === 0) return { rating: 'N/A', ratingColor: 'text-gray-500' };
+        if (totalFaturado === 0) return { rating: 'N/A', color: 'text-gray-500' };
 
         const totalAtrasado = filteredData
             .filter(d => d.Status_titulo === 'Atrasado' || d.Status_titulo === 'Em Aberto')
@@ -741,7 +741,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
     if (error) return <div className="w-full h-full flex items-center justify-center text-red-500 bg-slate-100">{error}</div>;
 
     return (
-        <div className="bg-slate-100 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
+        <div className="bg-slate-200 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
             <GeminiButton onClick={onGeminiClick} />
             <header className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">{dashboardId}</h1>
@@ -986,7 +986,7 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
 
 
     return (
-         <div className="bg-slate-100 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
+         <div className="bg-slate-200 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
             <GeminiButton onClick={onGeminiClick} />
             <header className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Visão 360° do Cliente</h1>
@@ -1152,7 +1152,7 @@ export default function App() {
     };
 
     return (
-        <main className="w-screen h-screen bg-slate-100 font-sans">
+        <main className="w-screen h-screen bg-slate-200 font-sans">
             <style>{`
                 @keyframes spin-slow { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
                 .globe-bg { animation: spin-slow 40s linear infinite; }
