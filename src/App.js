@@ -19,8 +19,8 @@ function ClientLogo({ clientCode, clientName }) {
     
     const [imageSrc, setImageSrc] = useState(logoUrl);
 
+    // Este useEffect agora reseta a imagem para a URL correta sempre que o cliente muda.
     useEffect(() => {
-        // Reseta a URL para a original sempre que o cliente mudar
         setImageSrc(logoUrl);
     }, [logoUrl]);
 
@@ -31,6 +31,8 @@ function ClientLogo({ clientCode, clientName }) {
 
     return (
         <img
+            // A "key" força o React a recriar o componente de imagem quando o cliente muda.
+            key={clientCode} 
             src={imageSrc}
             onError={handleError}
             alt={`Logo de ${clientName}`}
