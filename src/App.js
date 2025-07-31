@@ -43,7 +43,7 @@ function ClientLogo({ clientCode, clientName }) {
 
 
 // URL da logo do usuário.
-const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-files/image_74b444.png';
+const userLogoUrl = 'https://storage.googleapis.com/logos-portal-mercocamp/logo.png';
 
 // --- FUNÇÃO PARA CHAMADA DA API GEMINI ---
 const callGeminiAPI = async (prompt, chatHistory = []) => {
@@ -424,9 +424,9 @@ const LoginPage = ({ onLogin }) => {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 p-4">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 p-4">
             <div className="w-full max-w-sm">
-                <img src={userLogoUrl} alt="Mercocamp Logo" className="w-48 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/192x100/e2e8f0/0d9488?text=Mercocamp'; }} />
+                <img src={userLogoUrl} alt="Mercocamp Logo" className="w-64 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/256x100/e2e8f0/0d9488?text=Mercocamp'; }} />
 
                 <div className="space-y-4">
                     <input
@@ -480,7 +480,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
     ];
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-gray-800 p-4">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-gray-800 p-4">
             <GeminiButton onClick={onGeminiClick} />
             <div className="absolute top-5 right-5 text-right">
                 <p className="font-semibold text-xl text-gray-700">{time.toLocaleTimeString()}</p>
@@ -493,12 +493,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
             </div>
 
             <div className="text-center mb-12">
-                <div className="flex items-center justify-center gap-6">
-                    <SpinningGlobe />
-                    <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">
-                        MERCOCAMP
-                    </h1>
-                </div>
+                 <img src={userLogoUrl} alt="Mercocamp Logo" className="w-72 h-auto mx-auto" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/288x150/e2e8f0/0d9488?text=Mercocamp'; }} />
                 <p className="mt-4 text-2xl text-gray-600">{greeting}, seja bem-vindo(a)!</p>
             </div>
 
