@@ -8,8 +8,7 @@
     "lucide-react": "^0.263.1",
     "recharts": "^2.7.2",
     "react-scripts": "5.0.1",
-    "three": "^0.161.0",
-    "@react-three/fiber": "^8.15.16"
+    "three": "^0.161.0"
   },
   "scripts": {
     "start": "react-scripts start",
