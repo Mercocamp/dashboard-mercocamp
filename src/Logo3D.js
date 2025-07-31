@@ -1,68 +1,82 @@
-import React, { useRef, Suspense } from 'react';
+import React, { useRef, Suspense, useEffect, useState } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { TextureLoader } from 'three';
+import { TextureLoader, MathUtils } from 'three';
 
-// --- Componente interno que representa o cilindro giratório ---
-// Ele recebe a URL da imagem da logo como propriedade (prop)
-function SpinningCylinder({ logoUrl }) {
-  // Cria uma referência para podermos manipular o objeto 3D diretamente
+// --- Componente interno que representa o cilindro com a nova animação ---
+function AnimatingCylinder({ logoUrl, onAnimationComplete }) {
   const meshRef = useRef();
-
-  // Carrega a imagem da URL. O React vai "esperar" (Suspense) a imagem carregar
   const texture = useLoader(TextureLoader, logoUrl);
+  
+  // Estado para controlar se a animação está ativa
+  const [isAnimating, setIsAnimating] = useState(true);
 
-  // useFrame é um gancho que executa esta função em cada frame da animação (60x por segundo)
-  useFrame((state, delta) => {
-    // Gira o cilindro suavemente no eixo Y
+  // Define a rotação inicial (de lado) e a final (de frente)
+  const initialRotationY = Math.PI / 2; // 90 graus
+  const targetRotationY = 0; // 0 graus
+
+  // Seta a rotação inicial quando o componente é montado
+  useEffect(() => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.5; // A velocidade da rotação pode ser ajustada aqui
+      meshRef.current.rotation.y = initialRotationY;
+    }
+  }, []);
+
+  useFrame((state, delta) => {
+    if (isAnimating && meshRef.current) {
+      // Interpola suavemente da rotação atual para a rotação final
+      meshRef.current.rotation.y = MathUtils.lerp(meshRef.current.rotation.y, targetRotationY, 0.05);
+
+      // Verifica se a animação está perto o suficiente do final para parar
+      if (Math.abs(meshRef.current.rotation.y - targetRotationY) < 0.01) {
+        meshRef.current.rotation.y = targetRotationY; // Trava na posição final
+        setIsAnimating(false); // Para a animação
+        if (onAnimationComplete) onAnimationComplete();
+      }
     }
   });
 
-  // Isto é o que será renderizado na cena 3D
   return (
-    <mesh ref={meshRef} rotation={[0, 0, 0]}>
-      {/* A forma geométrica: um cilindro. Os argumentos são [raioCima, raioBaixo, altura, segmentos] */}
+    <mesh ref={meshRef}>
       <cylinderGeometry args={[2, 2, 0.2, 64]} />
-      {/* O material do objeto. Usamos a nossa imagem (textura) como o "mapa" de cores */}
-      <meshStandardMaterial map={texture} />
+      <meshStandardMaterial map={texture} transparent />
     </mesh>
   );
 }
 
-// --- Componente principal que exportamos e usamos no nosso App ---
-// Ele recebe o código do cliente para montar a URL da logo dinamicamente
+// --- Componente principal que exportamos ---
 export default function Logo3D({ clientCode }) {
-  // ATENÇÃO: A lógica abaixo assume que as logos no seu bucket do Google Cloud
-  // serão nomeadas exatamente com o código do cliente, seguido da extensão .png
-  // Exemplo: para o cliente 6883, o arquivo deve se chamar "6883.png"
-  // Se o nome do arquivo for diferente (ex: 6883-HAZAK.png), a URL precisa ser ajustada aqui.
+  // IMPORTANTE: Esta lógica assume que o nome do arquivo da logo no Google Cloud
+  // é EXATAMENTE o código do cliente. Ex: "6883.png"
   const logoUrl = `https://storage.googleapis.com/logos-portal-mercocamp/${clientCode}.png`;
   
-  // Fallback para o caso de a imagem não ser encontrada no bucket
+  // Imagem de fallback caso a logo do cliente não seja encontrada
   const fallbackLogoUrl = 'https://placehold.co/300x300/e2e8f0/0d9488?text=Logo';
+  const [urlToLoad, setUrlToLoad] = useState(logoUrl);
+  const [hasError, setHasError] = useState(false);
 
-  const [urlToLoad, setUrlToLoad] = React.useState(logoUrl);
+  // Verifica se a imagem existe, se não, usa a de fallback
+  useEffect(() => {
+      const img = new Image();
+      img.src = logoUrl;
+      img.onload = () => {
+          setUrlToLoad(logoUrl);
+          setHasError(false);
+      };
+      img.onerror = () => {
+          setUrlToLoad(fallbackLogoUrl);
+          setHasError(true);
+      };
+  }, [logoUrl]);
 
-  const handleError = () => {
-    setUrlToLoad(fallbackLogoUrl);
-  };
-
-  // Adicionamos um key ao componente para forçar a recarga quando a URL muda
-  const key = urlToLoad;
 
   return (
-    <div style={{ width: '150px', height: '150px' }}>
+    <div style={{ width: '100px', height: '100px', cursor: 'pointer' }}>
       <Canvas camera={{ position: [0, 0, 3.5], fov: 50 }}>
-        {/* Adiciona uma luz ambiente para iluminar a cena toda suavemente */}
-        <ambientLight intensity={1.5} />
-        {/* Adiciona uma luz direcional, como um "sol", para dar brilho e sombras */}
-        <directionalLight position={[10, 10, 5]} intensity={2} />
-        <pointLight position={[-10, -10, -10]} intensity={1} />
-
-        {/* Suspense mostra um fallback (pode ser null) enquanto o conteúdo (a logo) está carregando */}
+        <ambientLight intensity={2.5} />
+        <directionalLight position={[10, 10, 5]} intensity={3} />
         <Suspense fallback={null}>
-           <SpinningCylinder logoUrl={urlToLoad} key={key} onError={handleError} />
+          {/* Usamos a key para forçar o componente a recarregar e reanimar quando o cliente muda */}
+          <AnimatingCylinder logoUrl={urlToLoad} key={clientCode} />
         </Suspense>
       </Canvas>
     </div>
