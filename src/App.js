@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
+import Logo3D from './Logo3D'; // <-- NOSSA GRANDE IMPORTAÇÃO!
 
 // URL da logo do usuário.
 const userLogoUrl = 'https://storage.googleapis.com/gemini-generative-ai-public-files/image_74b444.png';
@@ -974,15 +975,19 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
                 <div className="space-y-6">
                     <StyledCard className="p-6">
                         <div className="flex justify-between items-start">
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedClient.Cliente} <span className="text-base font-normal text-gray-500">#{selectedClient.Codigo}</span></h2>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                    <span className={`text-lg font-bold ${clientAnalysis.score.color}`}>{clientAnalysis.score.text}</span>
-                                    <span className="text-gray-400 hidden sm:inline">•</span>
-                                    <span className="text-gray-600">Lotação: <span className="font-semibold text-gray-800">{clientAnalysis.lotacao}</span></span>
+                             {/* Container Flex para alinhar logo e texto */}
+                            <div className="flex items-center gap-4">
+                                <Logo3D clientCode={selectedClient.Codigo} clientName={selectedClient.Cliente} />
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedClient.Cliente} <span className="text-base font-normal text-gray-500">#{selectedClient.Codigo}</span></h2>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                        <span className={`text-lg font-bold ${clientAnalysis.score.color}`}>{clientAnalysis.score.text}</span>
+                                        <span className="text-gray-400 hidden sm:inline">•</span>
+                                        <span className="text-gray-600">Lotação: <span className="font-semibold text-gray-800">{clientAnalysis.lotacao}</span></span>
+                                    </div>
                                 </div>
                             </div>
-                            <button onClick={handleGenerateProfile} disabled={isAiLoading} className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-lg shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                            <button onClick={handleGenerateProfile} disabled={isAiLoading} className="flex-shrink-0 flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-lg shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Sparkles size={16} />
                                 {isAiLoading ? 'Gerando...' : '✨ Gerar Perfil'}
                             </button>
