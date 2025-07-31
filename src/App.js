@@ -2,57 +2,33 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
 
-// --- NOVO Componente de Spinner de Carregamento ---
-const LoadingSpinner = () => (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
-        <div className="spinner">
-            <div className="dot1"></div>
-            <div className="dot2"></div>
-            <div className="dot3"></div>
-            <div className="dot4"></div>
-            <div className="dot5"></div>
-            <div className="dot6"></div>
-        </div>
-        <p className="mt-4 text-gray-600">Carregando dados da planilha...</p>
-    </div>
-);
-
-
 // --- Componente da Logo Simples (Imagem Estática) ---
 function ClientLogo({ clientCode, clientName }) {
-    // Se não houver código ou nome, não renderiza nada para evitar erros.
     if (!clientCode || !clientName) {
         return null;
     }
 
-    // Monta o nome do arquivo no padrão "CODIGO-PRIMEIRONOME"
     const simplifiedName = clientName.split(' ')[0].toUpperCase();
     const fileName = `${clientCode}-${simplifiedName}`;
     const logoUrl = `https://storage.googleapis.com/logos-portal-mercocamp/${fileName}`;
-    
-    // URL de fallback caso a imagem do cliente não seja encontrada.
     const fallbackLogoUrl = 'https://placehold.co/100x100/e2e8f0/0d9488?text=Logo';
-    
     const [imageSrc, setImageSrc] = useState(logoUrl);
 
-    // Este useEffect agora reseta a imagem para a URL correta sempre que o cliente muda.
     useEffect(() => {
         setImageSrc(logoUrl);
     }, [logoUrl]);
 
     const handleError = () => {
-        // Se a logo do cliente não for encontrada, usa a URL de fallback.
         setImageSrc(fallbackLogoUrl);
     };
 
     return (
         <img
-            // A "key" força o React a recriar o componente de imagem quando o cliente muda.
             key={clientCode} 
             src={imageSrc}
             onError={handleError}
             alt={`Logo de ${clientName}`}
-            className="w-20 h-20 rounded-full object-cover border-2 border-slate-200" // Estilo da imagem
+            className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
         />
     );
 }
@@ -63,15 +39,10 @@ const userLogoUrl = 'https://storage.googleapis.com/logos-portal-mercocamp/logo.
 
 // --- FUNÇÃO PARA CHAMADA DA API GEMINI ---
 const callGeminiAPI = async (prompt, chatHistory = []) => {
-    // Chave da API do Gemini inserida diretamente para garantir o funcionamento.
     const apiKey = 'AIzaSyBSGdn1weejg1TA4maZwwh4qC8XZ6L8ptg';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
     const fullHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
-
-    const payload = {
-        contents: fullHistory
-    };
+    const payload = { contents: fullHistory };
 
     try {
         const response = await fetch(apiUrl, {
@@ -79,28 +50,72 @@ const callGeminiAPI = async (prompt, chatHistory = []) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
         if (!response.ok) {
             const errorBody = await response.json();
             console.error("API Error Body:", errorBody);
             throw new Error(`API Error: ${response.statusText}.`);
         }
-
         const result = await response.json();
-
-        if (result.candidates && result.candidates.length > 0 &&
-            result.candidates[0].content && result.candidates[0].content.parts &&
-            result.candidates[0].content.parts.length > 0) {
+        if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
             return result.candidates[0].content.parts[0].text;
         } else {
             console.warn("Resposta da API Gemini com estrutura inesperada:", result);
-            return "Não foi possível obter uma resposta da IA. A resposta pode estar vazia ou bloqueada por políticas de segurança.";
+            return "Não foi possível obter uma resposta da IA.";
         }
     } catch (error) {
         console.error("Erro ao chamar a API Gemini:", error);
         return `Ocorreu um erro ao se comunicar com a IA: ${error.message}`;
     }
 };
+
+// --- NOVO HOOK para buscar dados comerciais dos clientes ---
+const useClientData = () => {
+    const [clientDetails, setClientDetails] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const SPREADSHEET_ID = '1QZ5t4RR1Sd4JP5M6l4cyh7Vyr3ruQiA_EF9hNYVk2NQ';
+        const API_KEY = 'AIzaSyDESwQr8FkkWk1k2ybbbO3bRwH0JlxdfDw';
+        const RANGE = 'ClienteCD!A2:O'; // Colunas de A a O
+
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`);
+                if (!response.ok) throw new Error('Falha ao buscar dados comerciais dos clientes.');
+                
+                const result = await response.json();
+                const rows = result.values || [];
+                
+                const headers = ['Codigo', 'Cliente', 'CNPJ', 'Email', 'Endereco', 'Bairro', 'Cidade', 'UF', 'CEP', 'Contato', 'TipoFatura', 'Perc_Valr', 'VlrAluguel', 'AdValorem', 'Segmento'];
+                
+                const processedData = rows.map(row => {
+                    const rowData = {};
+                    headers.forEach((header, index) => {
+                        rowData[header] = row[index] || null;
+                    });
+                    return {
+                        ...rowData,
+                        Codigo: parseInt(rowData.Codigo, 10)
+                    };
+                });
+                setClientDetails(processedData);
+            } catch (e) {
+                console.error(e);
+                setError(e.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    return { clientDetails, loading, error };
+};
+
 
 // Hook de dados para buscar e processar dados da Planilha Google
 const useData = () => {
@@ -109,7 +124,6 @@ const useData = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Chaves inseridas diretamente para garantir o funcionamento na Vercel
         const SPREADSHEET_ID = '1QZ5t4RR1Sd4JP5M6l4cyh7Vyr3ruQiA_EF9hNYVk2NQ';
         const API_KEY = 'AIzaSyDESwQr8FkkWk1k2ybbbO3bRwH0JlxdfDw';
         const RANGE = 'BaseReceber!A2:AB';
@@ -117,30 +131,18 @@ const useData = () => {
         const fetchData = async () => {
             setLoading(true);
             setError(null);
-
             try {
                 const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`);
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error("Google Sheets API Error:", errorData);
-                    throw new Error('Falha ao buscar dados. Verifique se a chave de API é válida, se a planilha está compartilhada como "Qualquer pessoa com o link pode ver" e se o endereço do site está autorizado nas restrições da chave.');
-                }
+                if (!response.ok) throw new Error('Falha ao buscar dados de faturamento.');
+                
                 const result = await response.json();
                 const rows = result.values || [];
-
-                const headers = [
-                    'Codigo', 'Cliente', 'Vencimento', 'Emissao', 'NF', 'Lotacao_Origem', 'TP_Receita', 'TP_Receita_Detalhada', 'Vlr_NF', 'Vlr_Titulo',
-                    'Vlr_Receber', 'Vlr_Juros_Multa', 'Data_Pagamento', 'Vlr_Recebido', 'Vlr_Desconto', 'Status_titulo', 'Tipo_Resumido', 'Recebido_em',
-                    'Recebido_em_Banco', 'Recebido_em_Atraso', 'Recebido_em_Atraso_Juros', 'Observacao', 'Faturado_Por', 'Faturado_Em', 'Competencia',
-                    'Quinzenal', 'Lotacao', 'Dias_Atraso'
-                ];
+                const headers = ['Codigo', 'Cliente', 'Vencimento', 'Emissao', 'NF', 'Lotacao_Origem', 'TP_Receita', 'TP_Receita_Detalhada', 'Vlr_NF', 'Vlr_Titulo', 'Vlr_Receber', 'Vlr_Juros_Multa', 'Data_Pagamento', 'Vlr_Recebido', 'Vlr_Desconto', 'Status_titulo', 'Tipo_Resumido', 'Recebido_em', 'Recebido_em_Banco', 'Recebido_em_Atraso', 'Recebido_em_Atraso_Juros', 'Observacao', 'Faturado_Por', 'Faturado_Em', 'Competencia', 'Quinzenal', 'Lotacao', 'Dias_Atraso'];
 
                 const parseBrDate = (dateString) => {
                     if (!dateString || typeof dateString !== 'string') return null;
                     const parts = dateString.split('/');
-                    if (parts.length === 3) {
-                        return new Date(parts[2], parts[1] - 1, parts[0]);
-                    }
+                    if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
                     return null;
                 };
 
@@ -152,20 +154,16 @@ const useData = () => {
                 const twoYearsAgo = new Date();
                 twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
 
-                const processedData = rows.map((row, rowIndex) => {
+                const processedData = rows.map((row) => {
                     const rowData = {};
-                    headers.forEach((header, index) => {
-                        rowData[header] = row[index] || null;
-                    });
-
-                    rowData.EmissaoDate = parseBrDate(rowData.Emissao);
-
+                    headers.forEach((header, index) => { rowData[header] = row[index] || null; });
                     return rowData;
-                }).filter(d => d.EmissaoDate && d.EmissaoDate >= twoYearsAgo)
+                }).filter(d => parseBrDate(d.Emissao) && parseBrDate(d.Emissao) >= twoYearsAgo)
                 .map((d, index) => ({
                     ...d,
                     id: index,
                     Codigo: parseInt(d.Codigo, 10),
+                    EmissaoDate: parseBrDate(d.Emissao),
                     VencimentoDate: parseBrDate(d.Vencimento),
                     PagamentoDate: parseBrDate(d.Data_Pagamento),
                     Vlr_Titulo: parseCurrency(d.Vlr_Titulo),
@@ -175,7 +173,6 @@ const useData = () => {
                 }));
 
                 setData(processedData);
-
             } catch (e) {
                 console.error(e);
                 setError(e.message);
@@ -906,14 +903,18 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
 };
 
 // Página de Visão 360° do Cliente (Antiga Análise Individual)
-const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClient }) => {
+const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiClick, initialClient }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClient, setSelectedClient] = useState(initialClient || null);
     const [aiProfile, setAiProfile] = useState('');
     const [isAiLoading, setIsAiLoading] = useState(false);
 
+    const currentClientDetails = useMemo(() => {
+        if (!selectedClient || !clientDetails) return null;
+        return clientDetails.find(d => d.Codigo === selectedClient.Codigo);
+    }, [selectedClient, clientDetails]);
+
     useEffect(() => {
-        // Se um cliente inicial é passado, define ele como o selecionado
         if (initialClient) {
             setSelectedClient(initialClient);
         }
@@ -928,19 +929,20 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
 
     const clientData = useMemo(() => {
         if (!selectedClient || !data) return null;
-        return data.filter(d => d.Codigo === selectedClient.Codigo).sort((a,b) => a.EmissaoDate - b.EmissaoDate);
+        return data.filter(d => d.Codigo === selectedClient.Codigo).sort((a,b) => b.EmissaoDate - a.EmissaoDate);
     }, [selectedClient, data]);
 
     const clientAnalysis = useMemo(() => {
         if (!clientData || clientData.length === 0 || !selectedClient) return null;
-        const firstInvoice = clientData[0];
-        const lastInvoice = clientData[clientData.length - 1];
+        const firstInvoice = clientData[clientData.length - 1];
+        const lastInvoice = clientData[0];
         const totalInvoices = clientData.length;
         const aluguelCount = clientData.filter(d => d.Tipo_Resumido === 'Aluguel').length;
         const armazenagemCount = totalInvoices - aluguelCount;
         const latePayments = clientData.filter(d => d.Dias_Atraso > 0 && d.Status_titulo === 'Quitado');
         const avgDelay = latePayments.length > 0 ? latePayments.reduce((acc, d) => acc + d.Dias_Atraso, 0) / latePayments.length : 0;
         const score = getClientScore(selectedClient.Cliente, data);
+        
         const evolutionByYear = clientData.reduce((acc, d) => {
             if (!d.EmissaoDate) return acc;
             const year = d.EmissaoDate.getFullYear();
@@ -950,6 +952,7 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
             return acc;
         }, {});
         const yearlyData = Object.values(evolutionByYear).map(y => ({...y, media: y.total/y.count}));
+        
         const currentYear = new Date().getFullYear();
         const evolutionThisYear = clientData.filter(d => d.EmissaoDate && d.EmissaoDate.getFullYear() === currentYear).reduce((acc, d) => {
             const month = d.EmissaoDate.toLocaleString('pt-BR', { month: 'short' });
@@ -958,6 +961,7 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
             return acc;
         }, {});
         const monthlyData = Object.values(evolutionThisYear);
+        
         return { firstInvoiceDate: firstInvoice.EmissaoDate.toLocaleDateString('pt-BR'), lastInvoiceDate: lastInvoice.EmissaoDate.toLocaleDateString('pt-BR'), totalInvoices, aluguelCount, armazenagemCount, avgDelay: avgDelay.toFixed(1), score, lotacao: firstInvoice.Lotacao, yearlyData, monthlyData };
     }, [clientData, selectedClient, data]);
 
@@ -972,29 +976,34 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
         return clients.filter(c => c.Cliente.toLowerCase().includes(searchTerm.toLowerCase()) || c.Codigo.toString().includes(searchTerm)).slice(0, 5);
     }, [searchTerm, clients]);
 
-    const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const formatCurrency = (value) => {
+        if (value === null || value === undefined) return 'N/A';
+        const number = parseFloat(String(value).replace(',', '.'));
+        if (isNaN(number)) return 'N/A';
+        return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+    
+    const formatPercValr = (tipoFatura, percValr) => {
+        if (!percValr) return null;
+        if (tipoFatura === 'Percentual') {
+            return `${percValr}`;
+        }
+        return formatCurrency(percValr);
+    };
 
     const handleGenerateProfile = async () => {
-        if (!clientAnalysis) return;
+        if (!clientAnalysis || !currentClientDetails) return;
         setIsAiLoading(true);
         setAiProfile('');
-
-        const lastYearData = clientAnalysis.yearlyData[clientAnalysis.yearlyData.length - 2];
-        const currentYearData = clientAnalysis.yearlyData[clientAnalysis.yearlyData.length - 1];
-        let growthComparison = "Cliente novo, sem histórico para comparação anual.";
-        if (lastYearData && currentYearData) {
-            growthComparison = `Em ${lastYearData.year}, o valor médio por fatura foi de ${formatCurrency(lastYearData.media)}. Em ${currentYearData.year}, a média até o momento é de ${formatCurrency(currentYearData.media)}.`;
-        }
 
         const prompt = `Você é um analista de crédito da Mercocamp. Crie um perfil conciso sobre o cliente "${selectedClient.Cliente}" com base nos seguintes dados:
             - Status de Pagamento: ${clientAnalysis.score.text}.
             - Média de dias em atraso (quando ocorre): ${clientAnalysis.avgDelay} dias.
-            - Total de faturas no histórico: ${clientAnalysis.totalInvoices}.
             - Cliente desde: ${clientAnalysis.firstInvoiceDate}.
-            - Lotação principal: ${clientAnalysis.lotacao}.
-            - Comparativo de faturamento médio anual: ${growthComparison}
+            - Segmento: ${currentClientDetails.Segmento}.
+            - Contrato: Fatura do tipo "${currentClientDetails.TipoFatura}" com valor/percentual de ${formatPercValr(currentClientDetails.TipoFatura, currentClientDetails.Perc_Valr)}, Ad Valorem de ${currentClientDetails.AdValorem} e Aluguel de ${formatCurrency(currentClientDetails.VlrAluguel)}.
 
-            Descreva o comportamento de pagamento do cliente, comente sobre sua evolução de faturamento (se está crescendo, estável ou diminuindo com base nos dados anuais) e forneça uma recomendação geral em um parágrafo conciso e profissional.`;
+            Descreva o comportamento de pagamento do cliente, comente sobre sua evolução de faturamento e forneça uma recomendação geral em um parágrafo conciso e profissional.`;
 
         const profile = await callGeminiAPI(prompt);
         setAiProfile(profile);
@@ -1026,16 +1035,25 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
                 <div className="space-y-6">
                     <StyledCard className="p-6">
                         <div className="flex justify-between items-start">
-                            {/* Container Flex para alinhar logo e texto */}
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-6">
                                 <ClientLogo clientCode={selectedClient.Codigo} clientName={selectedClient.Cliente} />
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedClient.Cliente} <span className="text-base font-normal text-gray-500">#{selectedClient.Codigo}</span></h2>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                        <span className={`text-lg font-bold ${clientAnalysis.score.color}`}>{clientAnalysis.score.text}</span>
-                                        <span className="text-gray-400 hidden sm:inline">•</span>
-                                        <span className="text-gray-600">Lotação: <span className="font-semibold text-gray-800">{clientAnalysis.lotacao}</span></span>
+                                    <h2 className="text-2xl font-bold text-gray-800">{selectedClient.Cliente} <span className="text-base font-normal text-gray-500">#{selectedClient.Codigo}</span></h2>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm text-gray-600">
+                                        <span className={`font-bold ${clientAnalysis.score.color}`}>{clientAnalysis.score.text}</span>
+                                        <span className="text-gray-300">|</span>
+                                        <span>Lotação: <span className="font-semibold text-gray-800">{clientAnalysis.lotacao}</span></span>
+                                        {currentClientDetails?.Segmento && <><span className="text-gray-300">|</span><span>Segmento: <span className="font-semibold text-gray-800">{currentClientDetails.Segmento}</span></span></>}
                                     </div>
+                                    {currentClientDetails && (
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm text-gray-600">
+                                            <span>Aluguel: <span className="font-semibold text-gray-800">{formatCurrency(currentClientDetails.VlrAluguel)}</span></span>
+                                            <span className="text-gray-300">|</span>
+                                            <span>{currentClientDetails.TipoFatura}: <span className="font-semibold text-gray-800">{formatPercValr(currentClientDetails.TipoFatura, currentClientDetails.Perc_Valr)}</span></span>
+                                            <span className="text-gray-300">|</span>
+                                            <span>Ad Valorem: <span className="font-semibold text-gray-800">{currentClientDetails.AdValorem}</span></span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <button onClick={handleGenerateProfile} disabled={isAiLoading} className="flex-shrink-0 flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-lg shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
@@ -1090,14 +1108,15 @@ const Visao360Page = ({ data, loading, error, onBack, onGeminiClick, initialClie
 export default function App() {
     const [page, setPage] = useState('LOGIN'); // LOGIN, ANIMATING, MENU, DASHBOARD, VISAO_360
     const [dashboardId, setDashboardId] = useState(null);
-    const { data, loading, error } = useData();
+    const { data, loading: faturamentoLoading, error: faturamentoError } = useData();
+    const { clientDetails, loading: clientLoading, error: clientError } = useClientData();
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [selectedClientForProfile, setSelectedClientForProfile] = useState(null);
 
     const handleSelect = (pageType, id) => {
         setDashboardId(id);
         setPage(pageType);
-        setSelectedClientForProfile(null); // Limpa o cliente selecionado ao navegar pelo menu
+        setSelectedClientForProfile(null);
     };
 
     const handleNavigateToProfile = (client) => {
@@ -1122,7 +1141,6 @@ export default function App() {
 
     const { chatDataContext, chatContextName } = useMemo(() => {
         if (page === 'DASHBOARD' && dashboardId) {
-            // Lógica para filtrar dados para o dashboard atual
             const cdMap = {
                 'CD MATRIZ': ['CD MATRIZ', 'CD MATRIZ A', 'CD MATRIZ B'],
                 'CD CARIACICA': ['CD CARIACICA', 'CD CARIACICA 1', 'CD CARIACICA 2', 'CD CARIACICA 3'],
@@ -1133,7 +1151,6 @@ export default function App() {
             const filtered = dashboardId === 'GLOBAL' ? data : data.filter(d => locations.includes(d.Lotacao));
             return { chatDataContext: filtered, chatContextName: dashboardId };
         }
-        // Contexto para a Visão 360
         if (page === 'VISAO_360' && selectedClientForProfile) {
             const clientData = data.filter(d => d.Codigo === selectedClientForProfile.Codigo);
             return { chatDataContext: clientData, chatContextName: `Visão 360° de ${selectedClientForProfile.Cliente}` };
@@ -1142,6 +1159,9 @@ export default function App() {
     }, [page, dashboardId, data, selectedClientForProfile]);
 
     const renderPage = () => {
+        const loading = faturamentoLoading || clientLoading;
+        const error = faturamentoError || clientError;
+
         if (loading && page !== 'LOGIN') {
             return <LoadingSpinner />;
         }
@@ -1153,18 +1173,12 @@ export default function App() {
         }
 
         switch (page) {
-            case 'LOGIN':
-                return <LoginPage onLogin={() => setPage('ANIMATING')} />;
-            case 'ANIMATING':
-                return <LogisticsIntroAnimation onAnimationEnd={() => setPage('MENU')} />;
-            case 'MENU':
-                return <MenuPage onSelect={handleSelect} onLogout={handleLogout} onGeminiClick={handleGeminiClick} />;
-            case 'DASHBOARD':
-                return <DashboardPage data={data} loading={loading} error={error} dashboardId={dashboardId} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} onClientClick={handleNavigateToProfile} />;
-            case 'VISAO_360':
-                return <Visao360Page data={data} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} initialClient={selectedClientForProfile} />;
-            default:
-                return <LoginPage onLogin={() => setPage('ANIMATING')} />;
+            case 'LOGIN': return <LoginPage onLogin={() => setPage('ANIMATING')} />;
+            case 'ANIMATING': return <LogisticsIntroAnimation onAnimationEnd={() => setPage('MENU')} />;
+            case 'MENU': return <MenuPage onSelect={handleSelect} onLogout={handleLogout} onGeminiClick={handleGeminiClick} />;
+            case 'DASHBOARD': return <DashboardPage data={data} loading={loading} error={error} dashboardId={dashboardId} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} onClientClick={handleNavigateToProfile} />;
+            case 'VISAO_360': return <Visao360Page data={data} clientDetails={clientDetails} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} initialClient={selectedClientForProfile} />;
+            default: return <LoginPage onLogin={() => setPage('ANIMATING')} />;
         }
     };
 
