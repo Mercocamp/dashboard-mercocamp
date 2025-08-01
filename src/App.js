@@ -39,10 +39,8 @@ const LoadingSpinner = () => (
 
 // --- Componente da Logo Simples (Imagem Estática) ---
 function ClientLogo({ clientCode, clientName }) {
-    // *** CORREÇÃO FINAL ***
-    // Se não houver código OU nome, não renderiza nada para evitar erros.
     if (!clientCode || !clientName) {
-        return <div className="w-20 h-20 rounded-full bg-slate-200" />; // Retorna um placeholder
+        return <div className="w-20 h-20 rounded-full bg-slate-200" />;
     }
 
     const simplifiedName = clientName.split(' ')[0].toUpperCase();
