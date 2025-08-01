@@ -7,12 +7,12 @@ import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 // --- Configuração do Firebase ---
 const firebaseConfig = {
-  apiKey: "AIzaSyCzW9Ct-r-Wskd4I7_PfH69DpspxqUIQQQ",
-  authDomain: "dashboard-mercocamp-214f1.firebaseapp.com",
-  projectId: "dashboard-mercocamp-214f1",
-  storageBucket: "dashboard-mercocamp-214f1.appspot.com",
-  messagingSenderId: "337375823957",
-  appId: "1:337375823957:web:8cf52e5c9c8018d19b2cdc"
+    apiKey: "AIzaSyCzW9Ct-r-Wskd4I7_PfH69DpspxqUIQQQ",
+    authDomain: "dashboard-mercocamp-214f1.firebaseapp.com",
+    projectId: "dashboard-mercocamp-214f1",
+    storageBucket: "dashboard-mercocamp-214f1.appspot.com",
+    messagingSenderId: "337375823957",
+    appId: "1:337375823957:web:8cf52e5c9c8018d19b2cdc"
 };
 
 // Inicializa o Firebase
@@ -59,7 +59,7 @@ function ClientLogo({ clientCode, clientName }) {
 
     return (
         <img
-            key={clientCode} 
+            key={clientCode}
             src={imageSrc}
             onError={handleError}
             alt={`Logo de ${clientName}`}
@@ -120,12 +120,12 @@ const useClientData = () => {
             try {
                 const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`);
                 if (!response.ok) throw new Error('Falha ao buscar dados comerciais dos clientes.');
-                
+
                 const result = await response.json();
                 const rows = result.values || [];
-                
+
                 const headers = ['Codigo', 'Cliente', 'CNPJ', 'Email', 'Endereco', 'Bairro', 'Cidade', 'UF', 'CEP', 'Contato', 'TipoFatura', 'Perc_Valr', 'VlrAluguel', 'AdValorem', 'Segmento', 'MinimoContrato'];
-                
+
                 const processedData = rows.map(row => {
                     const rowData = {};
                     headers.forEach((header, index) => {
@@ -173,7 +173,7 @@ const useData = () => {
             try {
                 const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`);
                 if (!response.ok) throw new Error('Falha ao buscar dados de faturamento.');
-                
+
                 const result = await response.json();
                 const rows = result.values || [];
                 const headers = ['Codigo', 'Cliente', 'Vencimento', 'Emissao', 'NF', 'Lotacao_Origem', 'TP_Receita', 'TP_Receita_Detalhada', 'Vlr_NF', 'Vlr_Titulo', 'Vlr_Receber', 'Vlr_Juros_Multa', 'Data_Pagamento', 'Vlr_Recebido', 'Vlr_Desconto', 'Status_titulo', 'Tipo_Resumido', 'Recebido_em', 'Recebido_em_Banco', 'Recebido_em_Atraso', 'Recebido_em_Atraso_Juros', 'Observacao', 'Faturado_Por', 'Faturado_Em', 'Competencia', 'Quinzenal', 'Lotacao', 'Dias_Atraso'];
@@ -202,18 +202,18 @@ const useData = () => {
                     const emissionDate = parseBrDate(d.Emissao);
                     return !isNaN(code) && emissionDate && emissionDate >= twoYearsAgo;
                 })
-                .map((d, index) => ({
-                    ...d,
-                    id: index,
-                    Codigo: parseInt(d.Codigo, 10),
-                    EmissaoDate: parseBrDate(d.Emissao),
-                    VencimentoDate: parseBrDate(d.Vencimento),
-                    PagamentoDate: parseBrDate(d.Data_Pagamento),
-                    Vlr_Titulo: parseCurrency(d.Vlr_Titulo),
-                    Vlr_Receber: parseCurrency(d.Vlr_Receber),
-                    Vlr_Recebido: parseCurrency(d.Vlr_Recebido),
-                    Dias_Atraso: parseInt(d.Dias_Atraso, 10) || 0,
-                }));
+                    .map((d, index) => ({
+                        ...d,
+                        id: index,
+                        Codigo: parseInt(d.Codigo, 10),
+                        EmissaoDate: parseBrDate(d.Emissao),
+                        VencimentoDate: parseBrDate(d.Vencimento),
+                        PagamentoDate: parseBrDate(d.Data_Pagamento),
+                        Vlr_Titulo: parseCurrency(d.Vlr_Titulo),
+                        Vlr_Receber: parseCurrency(d.Vlr_Receber),
+                        Vlr_Recebido: parseCurrency(d.Vlr_Recebido),
+                        Dias_Atraso: parseInt(d.Dias_Atraso, 10) || 0,
+                    }));
 
                 setData(processedData);
             } catch (e) {
@@ -315,7 +315,7 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
     useEffect(scrollToBottom, [messages]);
 
     useEffect(() => {
-        if(show) {
+        if (show) {
             setMessages([{
                 sender: 'ai',
                 text: `Olá! Sou o assistente de IA da Mercocamp. Tenho acesso aos dados de ${contextName}, à data atual e posso fazer pesquisas na web. Como posso ajudar?`
@@ -370,7 +370,7 @@ const ChatModal = ({ show, onClose, dataContext, contextName }) => {
                     {isLoading && (
                         <div className="flex justify-start">
                             <div className="rounded-lg px-3 py-2 max-w-xs bg-slate-100 text-gray-800">
-                                 ...
+                                ...
                             </div>
                         </div>
                     )}
@@ -484,7 +484,7 @@ const LoginPage = () => {
     return (
         <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 p-4">
             <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm">
-                <img src={userLogoUrl} alt="Mercocamp Logo" className="w-48 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/192x100/e2e8f0/0d9488?text=Mercocamp'; }} />
+                <img src={userLogoUrl} alt="Mercocamp Logo" className="w-48 h-auto mx-auto mb-8" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/192x100/e2e8f0/0d9488?text=Mercocamp'; }} />
 
                 <div className="space-y-4">
                     <input
@@ -554,7 +554,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick, userIsAdmin }) => {
             </div>
 
             <div className="text-center mb-12">
-                 <img src={userLogoUrl} alt="Mercocamp Logo" className="w-72 h-auto mx-auto" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/288x150/e2e8f0/0d9488?text=Mercocamp'; }} />
+                <img src={userLogoUrl} alt="Mercocamp Logo" className="w-72 h-auto mx-auto" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/288x150/e2e8f0/0d9488?text=Mercocamp'; }} />
                 <p className="mt-4 text-2xl text-gray-600">{greeting}, seja bem-vindo(a)!</p>
             </div>
 
@@ -674,13 +674,13 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
     const dailyFaturamento = useMemo(() => {
         const dailyData = {};
         filteredData.forEach(d => {
-            if(!d.EmissaoDate) return;
+            if (!d.EmissaoDate) return;
             const day = d.EmissaoDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
             if (!dailyData[day]) dailyData[day] = { Valor: 0, Quantidade: 0 };
             dailyData[day].Valor += d.Vlr_Titulo;
             dailyData[day].Quantidade++;
         });
-        return Object.keys(dailyData).map(day => ({ name: day, ...dailyData[day] })).sort((a,b) => a.name.localeCompare(b.name));
+        return Object.keys(dailyData).map(day => ({ name: day, ...dailyData[day] })).sort((a, b) => a.name.localeCompare(b.name));
     }, [filteredData]);
 
     const topBottomClientes = useMemo(() => {
@@ -794,7 +794,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                 }
                 devedores[d.Cliente].value += d.Vlr_Receber;
             });
-        return Object.values(devedores).sort((a,b) => b.value - a.value);
+        return Object.values(devedores).sort((a, b) => b.value - a.value);
     }, [filteredData]);
 
 
@@ -821,8 +821,8 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                     <div className="flex items-center gap-4">
                         <ToggleSwitch active={filterType === 'data'} onChange={() => setFilterType('data')} />
                         <label className="font-semibold text-gray-700">Período:</label>
-                        <input type="date" value={dateRange.start.toISOString().split('T')[0]} onChange={(e) => setDateRange(prev => ({...prev, start: new Date(e.target.value)}))} disabled={filterType !== 'data'} className="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50" />
-                        <input type="date" value={dateRange.end.toISOString().split('T')[0]} onChange={(e) => setDateRange(prev => ({...prev, end: new Date(e.target.value)}))} disabled={filterType !== 'data'} className="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50" />
+                        <input type="date" value={dateRange.start.toISOString().split('T')[0]} onChange={(e) => setDateRange(prev => ({ ...prev, start: new Date(e.target.value) }))} disabled={filterType !== 'data'} className="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50" />
+                        <input type="date" value={dateRange.end.toISOString().split('T')[0]} onChange={(e) => setDateRange(prev => ({ ...prev, end: new Date(e.target.value) }))} disabled={filterType !== 'data'} className="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50" />
                     </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-slate-200">
@@ -848,12 +848,12 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
             <StyledCard className="p-4 mb-6">
                 <h3 className="font-semibold mb-4 text-lg text-gray-800">Clientes Faturados</h3>
                 <div className="overflow-y-auto h-[240px] pr-2">
-                    {filteredData.sort((a,b) => b.Vlr_Titulo - a.Vlr_Titulo).map(item => {
+                    {filteredData.sort((a, b) => b.Vlr_Titulo - a.Vlr_Titulo).map(item => {
                         const score = getClientScore(item.Cliente, data);
                         return (
                             <div key={item.id} className="grid grid-cols-4 items-center gap-4 p-2 rounded-lg hover:bg-slate-50 text-sm">
                                 <button onClick={() => onClientClick(item)} className="col-span-2 truncate text-left font-semibold text-gray-800 cursor-pointer">
-                                {item.Cliente}
+                                    {item.Cliente}
                                 </button>
                                 <p className="text-gray-500">Venc: {item.VencimentoDate ? item.VencimentoDate.toLocaleDateString('pt-BR') : 'N/A'}</p>
                                 <div className="flex justify-between items-center">
@@ -929,17 +929,17 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
                         <YAxis yAxisId="right" orientation="right" stroke="#4f46e5" />
                         <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem' }} />
                         <Legend />
-                        <Line yAxisId="left" type="monotone" dataKey="Valor" stroke="#0d9488" strokeWidth={2} dot={{r: 4}} activeDot={{r: 8}} />
-                        <Line yAxisId="right" type="monotone" dataKey="Quantidade" stroke="#4f46e5" strokeWidth={2} dot={{r: 4}} activeDot={{r: 8}} />
+                        <Line yAxisId="left" type="monotone" dataKey="Valor" stroke="#0d9488" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+                        <Line yAxisId="right" type="monotone" dataKey="Quantidade" stroke="#4f46e5" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 8 }} />
                     </LineChart>
                 </ResponsiveContainer>
             </StyledCard>
 
-            <Modal show={scoreModal.isOpen} onClose={() => setScoreModal({isOpen: false, title: '', data: []})} title={scoreModal.title}>
+            <Modal show={scoreModal.isOpen} onClose={() => setScoreModal({ isOpen: false, title: '', data: [] })} title={scoreModal.title}>
                 <div className="max-h-96 overflow-y-auto">
                     {scoreModal.data.length > 0 ? scoreModal.data.map(client => (
                         <div key={client.Codigo} className="flex justify-between items-center p-2 rounded-lg hover:bg-slate-100">
-                        <button onClick={() => { onClientClick(client); setScoreModal({isOpen: false, title: '', data: []}); }} className="text-gray-800 text-left cursor-pointer">{client.name}</button>
+                            <button onClick={() => { onClientClick(client); setScoreModal({ isOpen: false, title: '', data: [] }); }} className="text-gray-800 text-left cursor-pointer">{client.name}</button>
                             <p className="text-gray-600">Total Faturado: {formatCurrency(client.total)}</p>
                         </div>
                     )) : <p className="text-gray-500 text-center">Nenhum cliente nesta categoria.</p>}
@@ -976,7 +976,7 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
 
     const clientData = useMemo(() => {
         if (!selectedClient || !data) return null;
-        return data.filter(d => d.Codigo === selectedClient.Codigo).sort((a,b) => b.EmissaoDate - a.EmissaoDate);
+        return data.filter(d => d.Codigo === selectedClient.Codigo).sort((a, b) => b.EmissaoDate - a.EmissaoDate);
     }, [selectedClient, data]);
 
     const clientAnalysis = useMemo(() => {
@@ -989,7 +989,7 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
         const latePayments = clientData.filter(d => d.Dias_Atraso > 0 && d.Status_titulo === 'Quitado');
         const avgDelay = latePayments.length > 0 ? latePayments.reduce((acc, d) => acc + d.Dias_Atraso, 0) / latePayments.length : 0;
         const score = getClientScore(selectedClient.Cliente, data);
-        
+
         const evolutionByYear = clientData.reduce((acc, d) => {
             if (!d.EmissaoDate) return acc;
             const year = d.EmissaoDate.getFullYear();
@@ -998,8 +998,8 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
             acc[year].count++;
             return acc;
         }, {});
-        const yearlyData = Object.values(evolutionByYear).map(y => ({...y, media: y.total/y.count}));
-        
+        const yearlyData = Object.values(evolutionByYear).map(y => ({ ...y, media: y.total / y.count }));
+
         const currentYear = new Date().getFullYear();
         const monthlyDataRaw = clientData.filter(d => d.EmissaoDate && d.EmissaoDate.getFullYear() === currentYear).reduce((acc, d) => {
             const monthIndex = d.EmissaoDate.getMonth();
@@ -1009,7 +1009,7 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
             return acc;
         }, {});
         const monthlyData = Object.values(monthlyDataRaw).sort((a, b) => a.monthIndex - b.monthIndex);
-        
+
         return { firstInvoiceDate: firstInvoice.EmissaoDate.toLocaleDateString('pt-BR'), lastInvoiceDate: lastInvoice.EmissaoDate.toLocaleDateString('pt-BR'), totalInvoices, aluguelCount, armazenagemCount, avgDelay: avgDelay.toFixed(1), score, lotacao: firstInvoice.Lotacao, yearlyData, monthlyData };
     }, [clientData, selectedClient, data]);
 
@@ -1035,7 +1035,7 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
         if (typeof value !== 'number') return value;
         return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
-    
+
     const formatPercValr = (tipoFatura, percValr) => {
         if (!percValr || String(percValr).trim() === '') return 'Isento';
         if (tipoFatura === 'Percentual') {
@@ -1075,10 +1075,10 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
             <StyledCard className="p-4 mb-6">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-                    <input type="text" placeholder="Pesquisar por nome ou código do cliente..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} onFocus={() => {setSelectedClient(null); setAiProfile('');}} className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                    <input type="text" placeholder="Pesquisar por nome ou código do cliente..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} onFocus={() => { setSelectedClient(null); setAiProfile(''); }} className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" />
                     {searchTerm && filteredClients.length > 0 && (
                         <ul className="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-lg shadow-lg">
-                            {filteredClients.map(c => ( <li key={c.Codigo} onClick={() => handleSelectClient(c)} className="px-4 py-2 hover:bg-slate-100 cursor-pointer">{c.Codigo} - {c.Cliente}</li> ))}
+                            {filteredClients.map(c => (<li key={c.Codigo} onClick={() => handleSelectClient(c)} className="px-4 py-2 hover:bg-slate-100 cursor-pointer">{c.Codigo} - {c.Cliente}</li>))}
                         </ul>
                     )}
                 </div>
@@ -1154,7 +1154,7 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
                     </div>
                 )
             )}
-    </div>
+        </div>
     );
 }
 
@@ -1164,14 +1164,275 @@ const ConstructionPage = ({ onBack, title = "Página" }) => (
         <SpinningGlobe />
         <h1 className="text-3xl font-bold text-gray-700 mt-8">{title} em Construção</h1>
         <p className="text-gray-500 mt-2">Estamos preparando algo incrível aqui. Volte em breve!</p>
-        <button 
-            onClick={onBack} 
+        <button
+            onClick={onBack}
             className="mt-8 flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
         >
             <Home size={20} /> Voltar ao Menu
         </button>
     </div>
 );
+
+// --- NOVO Componente de Configurações ---
+// Este componente substitui a página "Em Construção"
+const SettingsPage = ({ onBack, currentUserData }) => {
+    // Estado para armazenar a lista de todos os usuários
+    const [users, setUsers] = useState([]);
+    // Estado para controlar o carregamento dos dados
+    const [loading, setLoading] = useState(true);
+    // Estado para armazenar mensagens de erro
+    const [error, setError] = useState(null);
+    // Estado para controlar a visibilidade do modal de adicionar/editar usuário
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    // Estado para armazenar os dados do usuário que está sendo editado (ou null se for um novo)
+    const [editingUser, setEditingUser] = useState(null);
+
+    // Simulação de busca de dados do Firestore.
+    // No futuro, isso será uma chamada real ao Firestore.
+    useEffect(() => {
+        setLoading(true);
+        // Simula uma lista de usuários para visualização
+        const mockUsers = [
+            { uid: '123xyz', nome: 'William (Admin)', email: 'administrativo@mercocamp.com', isAdmin: true, permissoes: { GLOBAL: true, CD_MATRIZ: true, CD_CARIACICA: true, CD_VIANA: true, CD_CIVIT: true, VISAO_360: true, COBRANCA: true, SETTINGS: true } },
+            { uid: '456abc', nome: 'João Silva', email: 'joao.silva@cliente.com', isAdmin: false, permissoes: { GLOBAL: true, CD_MATRIZ: true } },
+            { uid: '789def', nome: 'Maria Souza', email: 'maria.souza@cliente.com', isAdmin: false, permissoes: { VISAO_360: true } },
+        ];
+        setUsers(mockUsers);
+        setLoading(false);
+    }, []);
+
+    // Função para abrir o modal para adicionar um novo usuário
+    const handleAddUser = () => {
+        setEditingUser(null); // Garante que o formulário estará vazio
+        setIsModalOpen(true);
+    };
+
+    // Função para abrir o modal para editar um usuário existente
+    const handleEditUser = (user) => {
+        setEditingUser(user);
+        setIsModalOpen(true);
+    };
+
+    // Função para deletar um usuário (por enquanto, só mostra um alerta)
+    const handleDeleteUser = (userId) => {
+        // A lógica de exclusão real será implementada com Cloud Functions
+        console.log(`Tentativa de deletar usuário: ${userId}`);
+        alert('A função de deletar será implementada em breve!');
+    };
+
+    // Função para fechar o modal
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingUser(null);
+    };
+
+    // Função para salvar as alterações (novo usuário ou edição)
+    const handleSaveUser = (userData) => {
+        // A lógica de salvar real será implementada com Cloud Functions
+        console.log('Salvando usuário:', userData);
+        if (editingUser) {
+            // Lógica de atualização
+            setUsers(users.map(u => u.uid === userData.uid ? userData : u));
+        } else {
+            // Lógica de adição
+            setUsers([...users, { ...userData, uid: `new_${Date.now()}` }]);
+        }
+        handleCloseModal();
+    };
+
+
+    if (loading) return <LoadingSpinner />;
+    if (error) return <div className="w-full h-full flex items-center justify-center text-red-500 bg-slate-100">{error}</div>;
+
+    return (
+        <div className="bg-slate-200 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
+            <header className="flex items-center justify-between mb-6">
+                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Configurações</h1>
+                <button onClick={onBack} className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors"><Home size={20} /> Menu</button>
+            </header>
+
+            <StyledCard>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold text-gray-700">Gerenciamento de Usuários</h2>
+                    <button
+                        onClick={handleAddUser}
+                        className="px-4 py-2 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-lg shadow-md hover:opacity-90 transition-opacity"
+                    >
+                        Adicionar Usuário
+                    </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white">
+                        <thead className="bg-slate-50">
+                            <tr>
+                                <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Nome</th>
+                                <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">E-mail</th>
+                                <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Admin</th>
+                                <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                            {users.map(user => (
+                                <tr key={user.uid} className="hover:bg-slate-50">
+                                    <td className="py-3 px-4 text-sm text-gray-800">{user.nome}</td>
+                                    <td className="py-3 px-4 text-sm text-gray-500">{user.email}</td>
+                                    <td className="py-3 px-4 text-sm">
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.isAdmin ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-600'}`}>
+                                            {user.isAdmin ? 'Sim' : 'Não'}
+                                        </span>
+                                    </td>
+                                    <td className="py-3 px-4 text-sm flex gap-2">
+                                        <button onClick={() => handleEditUser(user)} className="text-blue-600 hover:text-blue-800">Editar</button>
+                                        <button
+                                            onClick={() => handleDeleteUser(user.uid)}
+                                            className="text-red-600 hover:text-red-800"
+                                            // Desabilita a exclusão do usuário admin principal
+                                            disabled={user.email === 'administrativo@mercocamp.com'}
+                                        >
+                                            Excluir
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </StyledCard>
+
+            {/* Modal para Adicionar/Editar Usuário */}
+            <UserModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSave={handleSaveUser}
+                userData={editingUser}
+            />
+        </div>
+    );
+};
+
+// --- NOVO Componente para o Modal de Usuário ---
+const UserModal = ({ isOpen, onClose, onSave, userData }) => {
+    const [formData, setFormData] = useState({});
+
+    // Lista de todas as permissões possíveis no sistema
+    const allPermissions = [
+        { id: 'GLOBAL', label: 'Faturamento Global' },
+        { id: 'CD_MATRIZ', label: 'CD Matriz' },
+        { id: 'CD_CARIACICA', label: 'CD Cariacica' },
+        { id: 'CD_VIANA', label: 'CD Viana' },
+        { id: 'CD_CIVIT', label: 'CD Civit' },
+        { id: 'VISAO_360', label: 'Visão 360°' },
+        { id: 'COBRANCA', label: 'Cobrança' },
+        { id: 'SETTINGS', label: 'Configurações' },
+    ];
+
+    // Efeito para carregar os dados do usuário quando o modal abre para edição
+    useEffect(() => {
+        if (userData) {
+            setFormData({
+                uid: userData.uid,
+                nome: userData.nome || '',
+                email: userData.email || '',
+                isAdmin: userData.isAdmin || false,
+                permissoes: userData.permissoes || {},
+            });
+        } else {
+            // Reseta para um novo usuário
+            setFormData({
+                nome: '',
+                email: '',
+                password: '', // Senha só para novos usuários
+                isAdmin: false,
+                permissoes: {},
+            });
+        }
+    }, [userData, isOpen]);
+
+    // Função para lidar com a mudança nos inputs de texto
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    // Função para lidar com a mudança nas permissões (checkboxes)
+    const handlePermissionChange = (permissionId) => {
+        setFormData(prev => {
+            const newPermissoes = { ...prev.permissoes };
+            if (newPermissoes[permissionId]) {
+                delete newPermissoes[permissionId];
+            } else {
+                newPermissoes[permissionId] = true;
+            }
+            return { ...prev, permissoes: newPermissoes };
+        });
+    };
+
+    // Função para submeter o formulário
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(formData);
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <Modal show={isOpen} onClose={onClose} title={userData ? 'Editar Usuário' : 'Adicionar Novo Usuário'}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
+                    <input type="text" name="nome" value={formData.nome} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">E-mail</label>
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" readOnly={!!userData} />
+                </div>
+                {!userData && ( // Campo de senha aparece apenas para novos usuários
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Senha Provisória</label>
+                        <input type="password" name="password" value={formData.password} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" />
+                    </div>
+                )}
+                <div className="flex items-center">
+                    <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleChange} className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500" />
+                    <label className="ml-2 block text-sm text-gray-900">É Administrador? (Acesso total)</label>
+                </div>
+
+                <fieldset>
+                    <legend className="text-sm font-medium text-gray-700">Permissões de Acesso</legend>
+                    <div className="mt-2 grid grid-cols-2 gap-4">
+                        {allPermissions.map(perm => (
+                            <div key={perm.id} className="flex items-start">
+                                <div className="flex items-center h-5">
+                                    <input
+                                        id={perm.id}
+                                        name={perm.id}
+                                        type="checkbox"
+                                        checked={!!formData.permissoes?.[perm.id] || formData.isAdmin}
+                                        onChange={() => handlePermissionChange(perm.id)}
+                                        disabled={formData.isAdmin}
+                                        className="focus:ring-teal-500 h-4 w-4 text-teal-600 border-gray-300 rounded disabled:opacity-50"
+                                    />
+                                </div>
+                                <div className="ml-3 text-sm">
+                                    <label htmlFor={perm.id} className="font-medium text-gray-700">{perm.label}</label>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </fieldset>
+
+                <div className="flex justify-end gap-4 pt-4">
+                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar</button>
+                </div>
+            </form>
+        </Modal>
+    );
+};
 
 
 // Componente Principal da Aplicação
@@ -1212,7 +1473,7 @@ export default function App() {
                             await setDoc(userDocRef, adminData);
                             setCurrentUserData(adminData);
                         } else {
-                           setCurrentUserData({ nome: user.email.split('@')[0], isAdmin: false, permissoes: {} });
+                            setCurrentUserData({ nome: user.email.split('@')[0], isAdmin: false, permissoes: {} });
                         }
                     }
                     setCurrentUser(user);
@@ -1281,7 +1542,7 @@ export default function App() {
         if (page === 'LOADING' || (currentUser && !currentUserData) || (currentUser && loading)) {
             return <LoadingSpinner />;
         }
-        
+
         if (error) {
             return <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-red-500 p-4 text-center">
                 <h2 className="text-2xl font-bold mb-4">Erro ao Carregar Dados</h2>
@@ -1296,7 +1557,7 @@ export default function App() {
             case 'DASHBOARD': return <DashboardPage data={data} loading={loading} error={error} dashboardId={dashboardId} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} onClientClick={handleNavigateToProfile} />;
             case 'VISAO_360': return <Visao360Page data={data} clientDetails={clientDetails} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} initialClient={selectedClientForProfile} />;
             case 'COBRANCA': return <ConstructionPage onBack={handleBackToMenu} title="Cobrança" />;
-            case 'SETTINGS': return <ConstructionPage onBack={handleBackToMenu} title="Configurações" />;
+            case 'SETTINGS': return <SettingsPage onBack={handleBackToMenu} currentUserData={currentUserData} />;
             default: return <LoginPage />;
         }
     };
