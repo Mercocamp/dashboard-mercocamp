@@ -39,10 +39,8 @@ const LoadingSpinner = () => (
 
 // --- Componente da Logo Simples (Imagem Estática) ---
 function ClientLogo({ clientCode, clientName }) {
-    // *** CORREÇÃO FINAL ***
-    // Se não houver código OU nome, não renderiza nada para evitar erros.
     if (!clientCode || !clientName) {
-        return <div className="w-20 h-20 rounded-full bg-slate-200" />; // Retorna um placeholder
+        return <div className="w-20 h-20 rounded-full bg-slate-200" />;
     }
 
     const simplifiedName = clientName.split(' ')[0].toUpperCase();
@@ -1190,33 +1188,39 @@ export default function App() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const userDocRef = doc(db, "users", user.uid);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    setCurrentUserData(userDocSnap.data());
-                } else {
-                    // *** LÓGICA TEMPORÁRIA PARA CRIAR O ADMIN ***
-                    if (user.email.toLowerCase() === 'administrativo@mercocamp.com') {
-                        const adminData = {
-                            nome: 'William',
-                            isAdmin: true,
-                            permissoes: {
-                                GLOBAL: true,
-                                CD_MATRIZ: true,
-                                CD_CARIACICA: true,
-                                CD_VIANA: true,
-                                CD_CIVIT: true,
-                                VISAO_360: true,
-                                COBRANCA: true,
-                                SETTINGS: true
-                            }
-                        };
-                        await setDoc(userDocRef, adminData);
-                        setCurrentUserData(adminData);
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        setCurrentUserData(userDocSnap.data());
+                    } else {
+                        if (user.email.toLowerCase() === 'administrativo@mercocamp.com') {
+                            const adminData = {
+                                nome: 'William',
+                                isAdmin: true,
+                                permissoes: {
+                                    GLOBAL: true,
+                                    CD_MATRIZ: true,
+                                    CD_CARIACICA: true,
+                                    CD_VIANA: true,
+                                    CD_CIVIT: true,
+                                    VISAO_360: true,
+                                    COBRANCA: true,
+                                    SETTINGS: true
+                                }
+                            };
+                            await setDoc(userDocRef, adminData);
+                            setCurrentUserData(adminData);
+                        } else {
+                           setCurrentUserData({ nome: user.email.split('@')[0], isAdmin: false, permissoes: {} });
+                        }
                     }
+                    setCurrentUser(user);
+                    setPage('ANIMATING');
+                } catch (error) {
+                    console.error("Erro ao buscar dados do usuário:", error);
+                    signOut(auth);
                 }
-                setCurrentUser(user);
-                setPage('ANIMATING');
             } else {
                 setCurrentUser(null);
                 setCurrentUserData(null);
@@ -1274,7 +1278,7 @@ export default function App() {
         const loading = faturamentoLoading || clientLoading;
         const error = faturamentoError || clientError;
 
-        if (page === 'LOADING' || (currentUser && dataLoading)) {
+        if (page === 'LOADING' || (currentUser && !currentUserData) || (currentUser && dataLoading)) {
             return <LoadingSpinner />;
         }
         
