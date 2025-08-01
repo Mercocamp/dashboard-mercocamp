@@ -1278,7 +1278,7 @@ export default function App() {
         const loading = faturamentoLoading || clientLoading;
         const error = faturamentoError || clientError;
 
-        if (page === 'LOADING' || (currentUser && !currentUserData) || (currentUser && dataLoading)) {
+        if (page === 'LOADING' || (currentUser && !currentUserData) || (currentUser && loading)) {
             return <LoadingSpinner />;
         }
         
