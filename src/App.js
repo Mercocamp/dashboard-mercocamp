@@ -1,6 +1,25 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
+import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info, Settings } from 'lucide-react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+
+// --- Configuração do Firebase ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCzW9Ct-r-Wskd4I7_PfH69DpspxqUIQQQ",
+  authDomain: "dashboard-mercocamp-214f1.firebaseapp.com",
+  projectId: "dashboard-mercocamp-214f1",
+  storageBucket: "dashboard-mercocamp-214f1.appspot.com",
+  messagingSenderId: "337375823957",
+  appId: "1:337375823957:web:8cf52e5c9c8018d19b2cdc"
+};
+
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 
 // --- Componente de Spinner de Carregamento ---
 const LoadingSpinner = () => (
@@ -13,7 +32,7 @@ const LoadingSpinner = () => (
             <div className="dot5"></div>
             <div className="dot6"></div>
         </div>
-        <p className="mt-4 text-gray-600">Carregando dados da planilha...</p>
+        <p className="mt-4 text-gray-600">Carregando...</p>
     </div>
 );
 
@@ -396,62 +415,63 @@ const SpinningGlobe = () => {
     );
 };
 
-// Animação de Introdução Logística (Estilo GIF Centralizado)
-const LogisticsIntroAnimation = ({ onAnimationEnd }) => {
-    const stages = [
-        { icon: <Car size={80} />, name: "Veículo" },
-        { icon: <Truck size={80} />, name: "Caminhão" },
-        { icon: <Ship size={80} />, name: "Navio" },
-        { icon: <Plane size={80} />, name: "Avião" },
-    ];
-    const [index, setIndex] = useState(0);
+// --- NOVA Animação de Boas-Vindas ---
+const WelcomeAnimation = ({ userName, onAnimationEnd }) => {
+    const [stage, setStage] = useState(0);
 
     useEffect(() => {
-        if (index >= stages.length) {
-            setTimeout(onAnimationEnd, 1500); // Tempo para a animação do avião terminar
-            return;
+        if (stage === 0) {
+            setTimeout(() => setStage(1), 2000); // Duração da primeira mensagem
+        } else if (stage === 1) {
+            setTimeout(() => setStage(2), 2000); // Duração da segunda mensagem
+        } else if (stage === 2) {
+            setTimeout(onAnimationEnd, 500); // Transição para o menu
         }
+    }, [stage, onAnimationEnd]);
 
-        // --- ANIMAÇÃO ACELERADA ---
-        const timer = setTimeout(() => {
-            setIndex(prev => prev + 1);
-        }, 600); // Duração de cada etapa reduzida para 0.6 segundos
-
-        return () => clearTimeout(timer);
-    }, [index, onAnimationEnd, stages.length]);
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Bom dia';
+        if (hour < 18) return 'Boa tarde';
+        return 'Boa noite';
+    }
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-gray-800 p-4 overflow-hidden relative">
-            <div className="relative w-64 h-64 flex items-center justify-center">
-                {stages.map((v, i) => (
-                    <div
-                        key={v.name}
-                        className={`absolute flex flex-col items-center justify-center transition-opacity duration-500
-                            ${i === index ? 'opacity-100' : 'opacity-0'}
-                            ${v.name === 'Avião' && i === index ? 'animate-takeoff-center' : ''}
-                        `}
-                    >
-                        <div className="text-teal-500">{v.icon}</div>
-                    </div>
-                ))}
+        <div className="w-full h-full flex items-center justify-center bg-slate-200 overflow-hidden">
+            <div className="text-center">
+                <div className={`transition-all duration-500 ${stage === 0 ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`}>
+                    <h1 className="text-4xl font-bold text-gray-700">{getGreeting()}, {userName}!</h1>
+                </div>
+                <div className={`transition-all duration-500 delay-300 ${stage === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+                    <h2 className="text-3xl text-gray-600">O que posso fazer por você?</h2>
+                </div>
             </div>
         </div>
     );
 };
 
 // Página de Login com Usuário e Senha
-const LoginPage = ({ onLogin }) => {
-    const [username, setUsername] = useState('');
+const LoginPage = () => {
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = () => {
-        // Lógica de autenticação simples e hardcoded
-        if ((username.toLowerCase() === 'logistica' && password === '6057') || (username.toLowerCase() === 'adm01' && password === '6057')) {
-            setError('');
-            onLogin();
-        } else {
-            setError('Login ou senha incorreta.');
+    const handleLogin = async () => {
+        if (!email || !password) {
+            setError('Por favor, preencha e-mail e senha.');
+            return;
+        }
+        setLoading(true);
+        setError('');
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            // onAuthStateChanged no App principal cuidará da navegação
+        } catch (err) {
+            setError('E-mail ou senha incorretos.');
+            console.error("Erro de login:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -468,10 +488,10 @@ const LoginPage = ({ onLogin }) => {
 
                 <div className="space-y-4">
                     <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Login"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="E-mail"
                         className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                     <input
@@ -486,8 +506,8 @@ const LoginPage = ({ onLogin }) => {
 
                 {error && <p className="text-red-500 text-center mt-4">{error}</p>}
 
-                <button onClick={handleLogin} className={`w-full mt-6 px-12 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50`}>
-                    Entrar
+                <button onClick={handleLogin} disabled={loading} className={`w-full mt-6 px-12 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50 disabled:opacity-50`}>
+                    {loading ? 'Entrando...' : 'Entrar'}
                 </button>
             </div>
         </div>
@@ -495,7 +515,7 @@ const LoginPage = ({ onLogin }) => {
 };
 
 // Página de Menu
-const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
+const MenuPage = ({ onSelect, onLogout, onGeminiClick, userIsAdmin }) => {
     const [time, setTime] = useState(new Date());
     const [greeting, setGreeting] = useState('');
 
@@ -516,6 +536,8 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
         { id: 'CD CIVIT', label: 'CD Civit', icon: <Building /> },
         { id: 'VISAO_360', label: 'Visão 360° do Cliente', icon: <Search /> },
         { id: 'COBRANCA', label: 'Cobrança', icon: <DollarSign /> },
+        // A tela de configurações só aparece se o usuário for admin
+        ...(userIsAdmin ? [{ id: 'SETTINGS', label: 'Configurações', icon: <Settings /> }] : [])
     ];
 
     return (
@@ -541,7 +563,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
                     {menuOptions.map(opt => (
                         <button
                             key={opt.id}
-                            onClick={() => onSelect(opt.id === 'VISAO_360' ? 'VISAO_360' : opt.id === 'COBRANCA' ? 'COBRANCA' : 'DASHBOARD', opt.id)}
+                            onClick={() => onSelect(opt.id, opt.id)}
                             className="p-6 bg-slate-50 rounded-xl flex flex-col items-center justify-center gap-3 text-center hover:bg-white hover:shadow-lg hover:scale-105 transform transition-all duration-300 border border-slate-200"
                         >
                             <div className="text-teal-500">{React.cloneElement(opt.icon, { size: 32 })}</div>
@@ -927,7 +949,7 @@ const DashboardPage = ({ data, loading, error, dashboardId, onBack, onGeminiClic
     );
 };
 
-// Página de Visão 360° do Cliente (Antiga Análise Individual)
+// Página de Visão 360° do Cliente
 const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiClick, initialClient }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClient, setSelectedClient] = useState(initialClient || null);
@@ -1137,10 +1159,10 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
 }
 
 // --- NOVO Componente para a página "Em Construção" ---
-const ConstructionPage = ({ onBack }) => (
+const ConstructionPage = ({ onBack, title = "Página" }) => (
     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-gray-800 p-4">
         <SpinningGlobe />
-        <h1 className="text-3xl font-bold text-gray-700 mt-8">Página em Construção</h1>
+        <h1 className="text-3xl font-bold text-gray-700 mt-8">{title} em Construção</h1>
         <p className="text-gray-500 mt-2">Estamos preparando algo incrível aqui. Volte em breve!</p>
         <button 
             onClick={onBack} 
@@ -1154,16 +1176,38 @@ const ConstructionPage = ({ onBack }) => (
 
 // Componente Principal da Aplicação
 export default function App() {
-    const [page, setPage] = useState('LOGIN'); // LOGIN, ANIMATING, MENU, DASHBOARD, VISAO_360, COBRANCA
+    const [page, setPage] = useState('LOADING'); // LOADING, LOGIN, ANIMATING, MENU, ...
+    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUserData, setCurrentUserData] = useState(null);
     const [dashboardId, setDashboardId] = useState(null);
     const { data, loading: faturamentoLoading, error: faturamentoError } = useData();
     const { clientDetails, loading: clientLoading, error: clientError } = useClientData();
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [selectedClientForProfile, setSelectedClientForProfile] = useState(null);
 
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    setCurrentUserData(userDocSnap.data());
+                }
+                setCurrentUser(user);
+                setPage('ANIMATING');
+            } else {
+                setCurrentUser(null);
+                setCurrentUserData(null);
+                setPage('LOGIN');
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
     const handleSelect = (pageType, id) => {
+        const pageId = pageType === 'DASHBOARD' || pageType === 'VISAO_360' || pageType === 'COBRANCA' || pageType === 'SETTINGS' ? pageType : 'DASHBOARD';
         setDashboardId(id);
-        setPage(pageType);
+        setPage(pageId);
         setSelectedClientForProfile(null);
     };
 
@@ -1178,10 +1222,8 @@ export default function App() {
         setSelectedClientForProfile(null);
     };
 
-    const handleLogout = () => {
-        setPage('LOGIN');
-        setDashboardId(null);
-        setSelectedClientForProfile(null);
+    const handleLogout = async () => {
+        await signOut(auth);
     }
 
     const handleGeminiClick = () => setIsChatOpen(prev => !prev);
@@ -1210,9 +1252,10 @@ export default function App() {
         const loading = faturamentoLoading || clientLoading;
         const error = faturamentoError || clientError;
 
-        if (loading && page !== 'LOGIN') {
+        if (page === 'LOADING' || (currentUser && dataLoading)) {
             return <LoadingSpinner />;
         }
+        
         if (error) {
             return <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-red-500 p-4 text-center">
                 <h2 className="text-2xl font-bold mb-4">Erro ao Carregar Dados</h2>
@@ -1221,13 +1264,14 @@ export default function App() {
         }
 
         switch (page) {
-            case 'LOGIN': return <LoginPage onLogin={() => setPage('ANIMATING')} />;
-            case 'ANIMATING': return <LogisticsIntroAnimation onAnimationEnd={() => setPage('MENU')} />;
-            case 'MENU': return <MenuPage onSelect={handleSelect} onLogout={handleLogout} onGeminiClick={handleGeminiClick} />;
+            case 'LOGIN': return <LoginPage />;
+            case 'ANIMATING': return <WelcomeAnimation userName={currentUserData?.nome || 'Usuário'} onAnimationEnd={() => setPage('MENU')} />;
+            case 'MENU': return <MenuPage onSelect={handleSelect} onLogout={handleLogout} onGeminiClick={handleGeminiClick} userIsAdmin={currentUserData?.isAdmin} />;
             case 'DASHBOARD': return <DashboardPage data={data} loading={loading} error={error} dashboardId={dashboardId} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} onClientClick={handleNavigateToProfile} />;
             case 'VISAO_360': return <Visao360Page data={data} clientDetails={clientDetails} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} initialClient={selectedClientForProfile} />;
-            case 'COBRANCA': return <ConstructionPage onBack={handleBackToMenu} />;
-            default: return <LoginPage onLogin={() => setPage('ANIMATING')} />;
+            case 'COBRANCA': return <ConstructionPage onBack={handleBackToMenu} title="Cobrança" />;
+            case 'SETTINGS': return <ConstructionPage onBack={handleBackToMenu} title="Configurações" />;
+            default: return <LoginPage />;
         }
     };
 
