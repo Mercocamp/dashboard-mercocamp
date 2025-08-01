@@ -1,27 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info, Settings } from 'lucide-react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
-
-
-// --- Configuração do Firebase ---
-// Cole aqui as suas chaves que você pegou do console do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCzW9Ct-r-Wskd4I7_PfH69DpspxqUIQQQ",
-  authDomain: "dashboard-mercocamp-214f1.firebaseapp.com",
-  projectId: "dashboard-mercocamp-214f1",
-  storageBucket: "dashboard-mercocamp-214f1.appspot.com",
-  messagingSenderId: "337375823957",
-  appId: "1:337375823957:web:8cf52e5c9c8018d19b2cdc"
-};
-
-// Inicializa o Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
+import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info } from 'lucide-react';
 
 // --- Componente de Spinner de Carregamento ---
 const LoadingSpinner = () => (
@@ -34,7 +13,7 @@ const LoadingSpinner = () => (
             <div className="dot5"></div>
             <div className="dot6"></div>
         </div>
-        <p className="mt-4 text-gray-600">Carregando...</p>
+        <p className="mt-4 text-gray-600">Carregando dados da planilha...</p>
     </div>
 );
 
