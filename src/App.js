@@ -515,6 +515,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
         { id: 'CD VIANA', label: 'CD Viana', icon: <Building /> },
         { id: 'CD CIVIT', label: 'CD Civit', icon: <Building /> },
         { id: 'VISAO_360', label: 'Visão 360° do Cliente', icon: <Search /> },
+        { id: 'COBRANCA', label: 'Cobrança', icon: <DollarSign /> },
     ];
 
     return (
@@ -540,7 +541,7 @@ const MenuPage = ({ onSelect, onLogout, onGeminiClick }) => {
                     {menuOptions.map(opt => (
                         <button
                             key={opt.id}
-                            onClick={() => onSelect(opt.id === 'VISAO_360' ? 'VISAO_360' : 'DASHBOARD', opt.id)}
+                            onClick={() => onSelect(opt.id === 'VISAO_360' ? 'VISAO_360' : opt.id === 'COBRANCA' ? 'COBRANCA' : 'DASHBOARD', opt.id)}
                             className="p-6 bg-slate-50 rounded-xl flex flex-col items-center justify-center gap-3 text-center hover:bg-white hover:shadow-lg hover:scale-105 transform transition-all duration-300 border border-slate-200"
                         >
                             <div className="text-teal-500">{React.cloneElement(opt.icon, { size: 32 })}</div>
@@ -1135,10 +1136,25 @@ const Visao360Page = ({ data, clientDetails, loading, error, onBack, onGeminiCli
     );
 }
 
+// --- NOVO Componente para a página "Em Construção" ---
+const ConstructionPage = ({ onBack }) => (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-gray-800 p-4">
+        <SpinningGlobe />
+        <h1 className="text-3xl font-bold text-gray-700 mt-8">Página em Construção</h1>
+        <p className="text-gray-500 mt-2">Estamos preparando algo incrível aqui. Volte em breve!</p>
+        <button 
+            onClick={onBack} 
+            className="mt-8 flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+        >
+            <Home size={20} /> Voltar ao Menu
+        </button>
+    </div>
+);
+
 
 // Componente Principal da Aplicação
 export default function App() {
-    const [page, setPage] = useState('LOGIN'); // LOGIN, ANIMATING, MENU, DASHBOARD, VISAO_360
+    const [page, setPage] = useState('LOGIN'); // LOGIN, ANIMATING, MENU, DASHBOARD, VISAO_360, COBRANCA
     const [dashboardId, setDashboardId] = useState(null);
     const { data, loading: faturamentoLoading, error: faturamentoError } = useData();
     const { clientDetails, loading: clientLoading, error: clientError } = useClientData();
@@ -1210,6 +1226,7 @@ export default function App() {
             case 'MENU': return <MenuPage onSelect={handleSelect} onLogout={handleLogout} onGeminiClick={handleGeminiClick} />;
             case 'DASHBOARD': return <DashboardPage data={data} loading={loading} error={error} dashboardId={dashboardId} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} onClientClick={handleNavigateToProfile} />;
             case 'VISAO_360': return <Visao360Page data={data} clientDetails={clientDetails} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} initialClient={selectedClientForProfile} />;
+            case 'COBRANCA': return <ConstructionPage onBack={handleBackToMenu} />;
             default: return <LoginPage onLogin={() => setPage('ANIMATING')} />;
         }
     };
