@@ -1192,6 +1192,26 @@ export default function App() {
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists()) {
                     setCurrentUserData(userDocSnap.data());
+                } else {
+                    // *** LÓGICA TEMPORÁRIA PARA CRIAR O ADMIN ***
+                    if (user.email.toLowerCase() === 'administrativo@mercocamp.com') {
+                        const adminData = {
+                            nome: 'William',
+                            isAdmin: true,
+                            permissoes: {
+                                GLOBAL: true,
+                                CD_MATRIZ: true,
+                                CD_CARIACICA: true,
+                                CD_VIANA: true,
+                                CD_CIVIT: true,
+                                VISAO_360: true,
+                                COBRANCA: true,
+                                SETTINGS: true
+                            }
+                        };
+                        await setDoc(userDocRef, adminData);
+                        setCurrentUserData(adminData);
+                    }
                 }
                 setCurrentUser(user);
                 setPage('ANIMATING');
