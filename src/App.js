@@ -1176,7 +1176,7 @@ const ConstructionPage = ({ onBack, title = "Página" }) => (
     </div>
 );
 
-// --- NOVO Componente de Configurações ---
+// --- Componente de Configurações ---
 const SettingsPage = ({ onBack, currentUserData }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -1187,13 +1187,33 @@ const SettingsPage = ({ onBack, currentUserData }) => {
     // --- ATUALIZADO: Busca de dados reais da Cloud Function ---
     useEffect(() => {
         const fetchUsers = async () => {
+            if (!auth.currentUser) {
+                setError("Usuário não autenticado.");
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             setError(null);
             try {
-                // Prepara a chamada para a nossa Cloud Function 'listUsers'
-                const listUsersFunction = httpsCallable(functions, 'listUsers');
-                const result = await listUsersFunction();
-                setUsers(result.data); // A lista de usuários vem em result.data
+                const token = await auth.currentUser.getIdToken();
+                const functionURL = 'https://southamerica-east1-dashboard-mercocamp-214f1.cloudfunctions.net/listUsers';
+                
+                const response = await fetch(functionURL, {
+                    method: 'POST', // onRequest functions can be called with POST
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Falha na resposta da função.');
+                }
+
+                const result = await response.json();
+                setUsers(result);
             } catch (err) {
                 console.error("Erro ao buscar usuários:", err);
                 setError(err.message);
@@ -1304,7 +1324,7 @@ const SettingsPage = ({ onBack, currentUserData }) => {
     );
 };
 
-// --- NOVO Componente para o Modal de Usuário ---
+// --- Componente para o Modal de Usuário ---
 const UserModal = ({ isOpen, onClose, onSave, userData }) => {
     const [formData, setFormData] = useState({});
 
@@ -1437,8 +1457,6 @@ export default function App() {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    // --- ATUALIZAÇÃO CRÍTICA: Força a atualização do token de ID ---
-                    // Isso garante que as custom claims (como 'isAdmin') sejam carregadas
                     await user.getIdToken(true);
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
