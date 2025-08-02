@@ -31,13 +31,21 @@ exports.setAdminClaim = functions.firestore
 
 /**
  * Lista todos os usuários.
- * Convertido para onRequest para controle manual de CORS.
+ * CORRIGIDO com tratamento manual de OPTIONS (preflight).
  */
 exports.listUsers = functions.https.onRequest((request, response) => {
-  // Envolve a função com o handler do CORS
+  // Lida com a requisição prévia (CORS Preflight)
+  if (request.method === 'OPTIONS') {
+    response.set('Access-Control-Allow-Origin', '*');
+    response.set('Access-Control-Allow-Methods', 'GET, POST');
+    response.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    response.status(204).send('');
+    return;
+  }
+  
+  // Envolve o resto da lógica com o handler do CORS
   cors(request, response, async () => {
     try {
-      // 1. Verifica o token de autenticação do cabeçalho
       const idToken = request.headers.authorization?.split('Bearer ')[1];
       if (!idToken) {
         logger.warn("Chamada não autenticada para listUsers.");
@@ -45,7 +53,6 @@ exports.listUsers = functions.https.onRequest((request, response) => {
         return;
       }
 
-      // 2. Verifica se o token é válido e se o usuário é admin
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       if (!decodedToken.isAdmin) {
         logger.warn(`Usuário ${decodedToken.email} sem permissão de admin tentou listar usuários.`);
@@ -53,7 +60,6 @@ exports.listUsers = functions.https.onRequest((request, response) => {
         return;
       }
 
-      // 3. Lógica original para buscar e combinar usuários
       const listUsersResult = await admin.auth().listUsers(1000);
       const authUsers = listUsersResult.users;
 
