@@ -4,7 +4,6 @@ import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Ware
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
-// --- NOVA IMPORTAÇÃO para as Cloud Functions ---
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
 
@@ -22,8 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-// --- NOVA INICIALIZAÇÃO do serviço de Functions ---
-const functions = getFunctions(app, 'southamerica-east1'); // Especifique a região, ex: 'southamerica-east1' para São Paulo
+const functions = getFunctions(app, 'southamerica-east1');
 
 
 // --- Componente de Spinner de Carregamento ---
@@ -1439,6 +1437,9 @@ export default function App() {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
+                    // --- ATUALIZAÇÃO CRÍTICA: Força a atualização do token de ID ---
+                    // Isso garante que as custom claims (como 'isAdmin') sejam carregadas
+                    await user.getIdToken(true);
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
                     if (userDocSnap.exists()) {
