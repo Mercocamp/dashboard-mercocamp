@@ -1187,33 +1187,13 @@ const SettingsPage = ({ onBack, currentUserData }) => {
     // --- ATUALIZADO: Busca de dados reais da Cloud Function ---
     useEffect(() => {
         const fetchUsers = async () => {
-            if (!auth.currentUser) {
-                setError("Usuário não autenticado.");
-                setLoading(false);
-                return;
-            }
-
             setLoading(true);
             setError(null);
             try {
-                const token = await auth.currentUser.getIdToken();
-                const functionURL = 'https://southamerica-east1-dashboard-mercocamp-214f1.cloudfunctions.net/listUsers';
-                
-                const response = await fetch(functionURL, {
-                    method: 'POST', // onRequest functions can be called with POST
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Falha na resposta da função.');
-                }
-
-                const result = await response.json();
-                setUsers(result);
+                // Prepara a chamada para a nossa Cloud Function 'listUsers'
+                const listUsersFunction = httpsCallable(functions, 'listUsers');
+                const result = await listUsersFunction();
+                setUsers(result.data); // A lista de usuários vem em result.data
             } catch (err) {
                 console.error("Erro ao buscar usuários:", err);
                 setError(err.message);
@@ -1636,7 +1616,7 @@ export default function App() {
                 .spinner div:nth-child(2) { top: 8px; left: 42px; }
                 .spinner div:nth-child(3) { top: 23px; left: 46px; }
                 .spinner div:nth-child(4) { top: 38px; left: 42px; }
-                .spinner div:nth-child(5) { top: 46px; left: 23px; }
+                .spinner div:nth-child(5) { top: 46px, left: 23px; }
                 .spinner div:nth-child(6) { top: 38px; left: 8px; }
 
             `}</style>
