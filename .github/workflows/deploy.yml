@@ -1,0 +1,29 @@
+name: Deploy to Firebase
+
+on:
+  push:
+    branches:
+      - main # Ou a branch que você usa como principal
+    paths:
+      - 'functions/**' # Só executa se a pasta functions for alterada
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase
+        run: |
+          cd functions
+          npm install
+          firebase deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }} --project dashboard-mercocamp-214f1
