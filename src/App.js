@@ -4,6 +4,9 @@ import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Ware
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+// --- NOVA IMPORTAÇÃO para as Cloud Functions ---
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
 
 // --- Configuração do Firebase ---
 const firebaseConfig = {
@@ -19,6 +22,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+// --- NOVA INICIALIZAÇÃO do serviço de Functions ---
+const functions = getFunctions(app, 'southamerica-east1'); // Especifique a região, ex: 'southamerica-east1' para São Paulo
 
 
 // --- Componente de Spinner de Carregamento ---
@@ -1174,67 +1179,59 @@ const ConstructionPage = ({ onBack, title = "Página" }) => (
 );
 
 // --- NOVO Componente de Configurações ---
-// Este componente substitui a página "Em Construção"
 const SettingsPage = ({ onBack, currentUserData }) => {
-    // Estado para armazenar a lista de todos os usuários
     const [users, setUsers] = useState([]);
-    // Estado para controlar o carregamento dos dados
     const [loading, setLoading] = useState(true);
-    // Estado para armazenar mensagens de erro
     const [error, setError] = useState(null);
-    // Estado para controlar a visibilidade do modal de adicionar/editar usuário
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // Estado para armazenar os dados do usuário que está sendo editado (ou null se for um novo)
     const [editingUser, setEditingUser] = useState(null);
 
-    // Simulação de busca de dados do Firestore.
-    // No futuro, isso será uma chamada real ao Firestore.
+    // --- ATUALIZADO: Busca de dados reais da Cloud Function ---
     useEffect(() => {
-        setLoading(true);
-        // Simula uma lista de usuários para visualização
-        const mockUsers = [
-            { uid: '123xyz', nome: 'William (Admin)', email: 'administrativo@mercocamp.com', isAdmin: true, permissoes: { GLOBAL: true, CD_MATRIZ: true, CD_CARIACICA: true, CD_VIANA: true, CD_CIVIT: true, VISAO_360: true, COBRANCA: true, SETTINGS: true } },
-            { uid: '456abc', nome: 'João Silva', email: 'joao.silva@cliente.com', isAdmin: false, permissoes: { GLOBAL: true, CD_MATRIZ: true } },
-            { uid: '789def', nome: 'Maria Souza', email: 'maria.souza@cliente.com', isAdmin: false, permissoes: { VISAO_360: true } },
-        ];
-        setUsers(mockUsers);
-        setLoading(false);
+        const fetchUsers = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                // Prepara a chamada para a nossa Cloud Function 'listUsers'
+                const listUsersFunction = httpsCallable(functions, 'listUsers');
+                const result = await listUsersFunction();
+                setUsers(result.data); // A lista de usuários vem em result.data
+            } catch (err) {
+                console.error("Erro ao buscar usuários:", err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
     }, []);
 
-    // Função para abrir o modal para adicionar um novo usuário
     const handleAddUser = () => {
-        setEditingUser(null); // Garante que o formulário estará vazio
+        setEditingUser(null);
         setIsModalOpen(true);
     };
 
-    // Função para abrir o modal para editar um usuário existente
     const handleEditUser = (user) => {
         setEditingUser(user);
         setIsModalOpen(true);
     };
 
-    // Função para deletar um usuário (por enquanto, só mostra um alerta)
     const handleDeleteUser = (userId) => {
-        // A lógica de exclusão real será implementada com Cloud Functions
         console.log(`Tentativa de deletar usuário: ${userId}`);
         alert('A função de deletar será implementada em breve!');
     };
 
-    // Função para fechar o modal
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingUser(null);
     };
 
-    // Função para salvar as alterações (novo usuário ou edição)
     const handleSaveUser = (userData) => {
-        // A lógica de salvar real será implementada com Cloud Functions
         console.log('Salvando usuário:', userData);
         if (editingUser) {
-            // Lógica de atualização
             setUsers(users.map(u => u.uid === userData.uid ? userData : u));
         } else {
-            // Lógica de adição
             setUsers([...users, { ...userData, uid: `new_${Date.now()}` }]);
         }
         handleCloseModal();
@@ -1242,7 +1239,7 @@ const SettingsPage = ({ onBack, currentUserData }) => {
 
 
     if (loading) return <LoadingSpinner />;
-    if (error) return <div className="w-full h-full flex items-center justify-center text-red-500 bg-slate-100">{error}</div>;
+    if (error) return <div className="w-full h-full flex items-center justify-center text-red-500 bg-slate-100 p-4">Erro ao carregar usuários: {error}</div>;
 
     return (
         <div className="bg-slate-200 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
@@ -1286,8 +1283,7 @@ const SettingsPage = ({ onBack, currentUserData }) => {
                                         <button onClick={() => handleEditUser(user)} className="text-blue-600 hover:text-blue-800">Editar</button>
                                         <button
                                             onClick={() => handleDeleteUser(user.uid)}
-                                            className="text-red-600 hover:text-red-800"
-                                            // Desabilita a exclusão do usuário admin principal
+                                            className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={user.email === 'administrativo@mercocamp.com'}
                                         >
                                             Excluir
@@ -1300,7 +1296,6 @@ const SettingsPage = ({ onBack, currentUserData }) => {
                 </div>
             </StyledCard>
 
-            {/* Modal para Adicionar/Editar Usuário */}
             <UserModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
@@ -1315,7 +1310,6 @@ const SettingsPage = ({ onBack, currentUserData }) => {
 const UserModal = ({ isOpen, onClose, onSave, userData }) => {
     const [formData, setFormData] = useState({});
 
-    // Lista de todas as permissões possíveis no sistema
     const allPermissions = [
         { id: 'GLOBAL', label: 'Faturamento Global' },
         { id: 'CD_MATRIZ', label: 'CD Matriz' },
@@ -1327,7 +1321,6 @@ const UserModal = ({ isOpen, onClose, onSave, userData }) => {
         { id: 'SETTINGS', label: 'Configurações' },
     ];
 
-    // Efeito para carregar os dados do usuário quando o modal abre para edição
     useEffect(() => {
         if (userData) {
             setFormData({
@@ -1338,18 +1331,16 @@ const UserModal = ({ isOpen, onClose, onSave, userData }) => {
                 permissoes: userData.permissoes || {},
             });
         } else {
-            // Reseta para um novo usuário
             setFormData({
                 nome: '',
                 email: '',
-                password: '', // Senha só para novos usuários
+                password: '',
                 isAdmin: false,
                 permissoes: {},
             });
         }
     }, [userData, isOpen]);
 
-    // Função para lidar com a mudança nos inputs de texto
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -1358,7 +1349,6 @@ const UserModal = ({ isOpen, onClose, onSave, userData }) => {
         }));
     };
 
-    // Função para lidar com a mudança nas permissões (checkboxes)
     const handlePermissionChange = (permissionId) => {
         setFormData(prev => {
             const newPermissoes = { ...prev.permissoes };
@@ -1371,7 +1361,6 @@ const UserModal = ({ isOpen, onClose, onSave, userData }) => {
         });
     };
 
-    // Função para submeter o formulário
     const handleSubmit = (e) => {
         e.preventDefault();
         onSave(formData);
@@ -1390,7 +1379,7 @@ const UserModal = ({ isOpen, onClose, onSave, userData }) => {
                     <label className="block text-sm font-medium text-gray-700">E-mail</label>
                     <input type="email" name="email" value={formData.email} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" readOnly={!!userData} />
                 </div>
-                {!userData && ( // Campo de senha aparece apenas para novos usuários
+                {!userData && (
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Senha Provisória</label>
                         <input type="password" name="password" value={formData.password} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" />
