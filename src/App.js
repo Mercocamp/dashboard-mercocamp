@@ -3,8 +3,9 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info, Settings } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-// ATUALIZADO: Adicionado 'collection' e 'getDocs'
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+// ATUALIZADO: Precisamos das functions de volta para criar/editar usuários
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 
 // --- Configuração do Firebase ---
@@ -21,7 +22,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-// REMOVIDO: A inicialização do 'functions' não é mais necessária aqui.
+// ATUALIZADO: Inicializa as functions novamente
+const functions = getFunctions(app, 'southamerica-east1');
 
 
 // --- Componente de Spinner de Carregamento ---
