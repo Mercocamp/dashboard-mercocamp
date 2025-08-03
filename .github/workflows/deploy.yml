@@ -1,29 +1,35 @@
-name: Deploy to Firebase
+name: Deploy to Firebase Functions
 
 on:
   push:
     branches:
-      - main # Garante que só roda na branch principal
+      - main # Garante que a automação só roda na branch 'main'
     paths:
       - 'functions/**'      # Roda se a pasta functions for alterada
       - 'firebase.json'     # Roda se o firebase.json for alterado
 
 jobs:
-  deploy:
+  deploy_functions:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      # 1. Baixa o código do seu repositório para a máquina virtual
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # 2. (Passo de Depuração) Lista os arquivos na raiz para confirmar que firebase.json está lá
+      - name: List files in the root directory
+        run: ls -la
+
+      # 3. Configura o ambiente Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Install Dependencies for Functions
-        # Entra na pasta functions, instala os pacotes e volta para a raiz
+      # 4. Entra na pasta 'functions' e instala os pacotes necessários (firebase-admin, etc.)
+      - name: Install Function Dependencies
         run: cd functions && npm install
 
+      # 5. Executa o comando de deploy a partir da raiz do projeto
       - name: Deploy to Firebase
-        # Executa o comando de deploy a partir da raiz do projeto
-        run: npx firebase-tools deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }} --project dashboard-mercocamp-214f1 --force
+        run: npx firebase-tools deploy --only functions --token "${{ secrets.FIREBASE_TOKEN }}" --project dashboard-mercocamp-214f1 --force
