@@ -1,96 +1,104 @@
-// Cole este código no seu arquivo /functions/index.js
-
-// Importa os módulos necessários do Firebase
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const { logger } = require("firebase-functions");
 
-// Inicializa o Firebase Admin SDK para dar acesso ao backend
 admin.initializeApp();
 
 /**
- * Define um Custom Claim 'admin' no Firebase Auth sempre que
- * o campo 'isAdmin' em um documento /users/{uid} no Firestore for alterado.
+ * Cria um novo usuário no Firebase Auth e salva seus detalhes no Firestore.
+ * Apenas administradores podem chamar esta função.
  */
-exports.setAdminClaim = functions
-  .region('southamerica-east1') // Manter a região é uma boa prática
-  .firestore.document("users/{uid}")
-  .onWrite(async (change, context) => {
-    const uid = context.params.uid;
-    const userData = change.after.data();
+exports.createUser = functions.https.onCall(async (data, context) => {
+  // Verifica se o usuário que está fazendo a chamada é um administrador.
+  if (context.auth.token.admin !== true) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Apenas administradores podem criar novos usuários."
+    );
+  }
 
-    if (!userData) {
-      logger.info(`Documento do usuário ${uid} foi deletado.`);
-      return null;
-    }
+  const { email, password, nome, isAdmin, permissoes } = data;
 
-    // Usamos 'admin' para o claim e 'isAdmin' para o campo no Firestore
-    const isUserAdmin = userData.isAdmin === true;
+  try {
+    // Cria o usuário no Firebase Authentication
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: password,
+      displayName: nome,
+    });
 
-    try {
-      const user = await admin.auth().getUser(uid);
-      const currentClaims = user.customClaims || {};
+    // Define o custom claim de admin no Auth
+    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: isAdmin });
 
-      // Verifica se o claim 'admin' já está com o valor correto para evitar escritas desnecessárias
-      if (currentClaims.admin === isUserAdmin) {
-        logger.info(`Claim 'admin' para ${uid} já está correto. Nenhuma alteração necessária.`);
-        return null;
-      }
+    // Salva os dados do usuário (incluindo permissões) no Firestore
+    await admin.firestore().collection("users").doc(userRecord.uid).set({
+      nome: nome,
+      email: email,
+      isAdmin: isAdmin,
+      permissoes: permissoes || {},
+    });
 
-      // Define o custom claim, mantendo os outros que possam existir
-      await admin.auth().setCustomUserClaims(uid, { ...currentClaims, admin: isUserAdmin });
-      logger.info(`Claim 'admin' definido como ${isUserAdmin} para o usuário ${uid}.`);
-      return null;
-
-    } catch (error) {
-      logger.error(`Erro ao definir custom claim para o usuário ${uid}:`, error);
-      return null;
-    }
-  });
+    return { result: `Usuário ${email} criado com sucesso.` };
+  } catch (error) {
+    console.error("Erro ao criar usuário:", error);
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
 
 /**
- * Função HTTPS "onCall" para listar todos os usuários, combinando dados do Auth e Firestore.
- * Apenas usuários com o claim 'admin' podem chamar esta função.
+ * Atualiza os dados de um usuário existente no Firestore e seus claims no Auth.
+ * Apenas administradores podem chamar esta função.
  */
-exports.listUsers = functions
-  .region('southamerica-east1') // É importante que a região seja a mesma da outra função
-  .https.onCall(async (data, context) => {
-    // 1. Verifica se o usuário está autenticado e se é um admin
-    if (!context.auth || context.auth.token.admin !== true) {
-      throw new functions.https.HttpsError(
-        'permission-denied',
-        'Você não tem permissão para executar esta ação.'
-      );
-    }
+exports.updateUser = functions.https.onCall(async (data, context) => {
+  if (context.auth.token.admin !== true) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Apenas administradores podem atualizar usuários."
+    );
+  }
 
-    try {
-      // 2. Busca todos os usuários do Firebase Authentication
-      const listUsersResult = await admin.auth().listUsers(1000);
+  const { uid, nome, isAdmin, permissoes } = data;
 
-      // 3. Busca os dados complementares de todos os usuários no Firestore
-      const firestoreSnap = await admin.firestore().collection('users').get();
-      const firestoreDataMap = {};
-      firestoreSnap.forEach(doc => {
-        firestoreDataMap[doc.id] = doc.data();
-      });
+  try {
+    // Atualiza o custom claim de admin
+    await admin.auth().setCustomUserClaims(uid, { admin: isAdmin });
 
-      // 4. Combina os dados do Auth e do Firestore
-      const combinedUsers = listUsersResult.users.map(user => {
-        const firestoreInfo = firestoreDataMap[user.uid] || {};
-        return {
-          uid: user.uid,
-          email: user.email,
-          nome: firestoreInfo.nome || user.displayName || 'Nome não informado',
-          isAdmin: firestoreInfo.isAdmin === true,
-          permissoes: firestoreInfo.permissoes || {},
-        };
-      });
+    // Atualiza os dados no Firestore
+    await admin.firestore().collection("users").doc(uid).update({
+      nome: nome,
+      isAdmin: isAdmin,
+      permissoes: permissoes || {},
+    });
 
-      logger.info(`Admin ${context.auth.token.email} listou ${combinedUsers.length} usuários.`);
-      return { users: combinedUsers };
+    return { result: `Usuário ${uid} atualizado com sucesso.` };
+  } catch (error) {
+    console.error("Erro ao atualizar usuário:", error);
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
 
-    } catch (error) {
-      logger.error("Erro fatal ao listar usuários:", error);
-      throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao buscar a lista de usuários.');
-    }
-  });
+/**
+ * Deleta um usuário do Firebase Auth e do Firestore.
+ * Apenas administradores podem chamar esta função.
+ */
+exports.deleteUser = functions.https.onCall(async (data, context) => {
+  if (context.auth.token.admin !== true) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Apenas administradores podem deletar usuários."
+    );
+  }
+
+  const { uid } = data;
+
+  try {
+    // Deleta do Authentication
+    await admin.auth().deleteUser(uid);
+    // Deleta do Firestore
+    await admin.firestore().collection("users").doc(uid).delete();
+
+    return { result: `Usuário ${uid} deletado com sucesso.` };
+  } catch (error) {
+    console.error("Erro ao deletar usuário:", error);
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
