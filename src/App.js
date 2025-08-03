@@ -3,8 +3,8 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info, Settings } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+// --- ALTERAÇÃO 1: Adicionado 'collection' e 'getDocs' ---
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 
 
 // --- Configuração do Firebase ---
@@ -21,7 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const functions = getFunctions(app, 'southamerica-east1');
+// --- ALTERAÇÃO 2: A linha 'const functions = ...' foi removida pois não é mais necessária ---
 
 
 // --- Componente de Spinner de Carregamento ---
@@ -1630,5 +1630,4 @@ export default function App() {
                 contextName={chatContextName}
             />
         </main>
-    )
-}
+    
