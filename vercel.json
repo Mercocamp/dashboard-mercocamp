@@ -1,8 +1,10 @@
+// Cole este código no seu arquivo vercel.json (na pasta principal do projeto)
+
 {
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "source": "/api/:path*",
+      "destination": "https://southamerica-east1-SEU-PROJECT-ID.cloudfunctions.net/:path*"
     }
   ]
 }
