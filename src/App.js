@@ -3,7 +3,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Warehouse, Percent, Bot, Smile, Meh, Frown, Ship, Train, Truck, Car, Plane, Sparkles, Send, User, Lock, Info, Settings } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-// --- ALTERAÇÃO 1: Adicionado 'collection' e 'getDocs' ---
+// ATUALIZADO: Adicionado 'collection' e 'getDocs'
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 
 
@@ -21,7 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-// --- ALTERAÇÃO 2: A linha 'const functions = ...' foi removida pois não é mais necessária ---
+// REMOVIDO: A inicialização do 'functions' não é mais necessária aqui.
 
 
 // --- Componente de Spinner de Carregamento ---
@@ -1176,7 +1176,7 @@ const ConstructionPage = ({ onBack, title = "Página" }) => (
     </div>
 );
 
-// --- Componente de Configurações ---
+// --- Componente de Configurações (VERSÃO SIMPLIFICADA E CORRIGIDA) ---
 const SettingsPage = ({ onBack, currentUserData }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -1184,26 +1184,38 @@ const SettingsPage = ({ onBack, currentUserData }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
 
-    // --- ATUALIZADO: Busca de dados reais da Cloud Function ---
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
             setError(null);
             try {
-                // Prepara a chamada para a nossa Cloud Function 'listUsers'
-                const listUsersFunction = httpsCallable(functions, 'listUsers');
-                const result = await listUsersFunction();
-                setUsers(result.data.users); // A lista de usuários vem em result.data.users
+                // Tenta buscar a coleção inteira de usuários.
+                // As regras de segurança do Firestore vão permitir ou bloquear isso.
+                const usersCollectionRef = collection(db, "users");
+                const querySnapshot = await getDocs(usersCollectionRef);
+
+                // Se o código chegou até aqui, o usuário É um admin.
+                const usersList = querySnapshot.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                }));
+                setUsers(usersList);
+
             } catch (err) {
                 console.error("Erro ao buscar usuários:", err);
-                setError(err.message);
+                // Se o erro for de permissão negada, o usuário NÃO é um admin.
+                if (err.code === 'permission-denied') {
+                    setError("Você não tem permissão para acessar esta página.");
+                } else {
+                    setError("Ocorreu um erro ao carregar os usuários.");
+                }
             } finally {
                 setLoading(false);
             }
         };
 
         fetchUsers();
-    }, []);
+    }, []); // O array vazio [] garante que isso rode apenas uma vez.
 
     const handleAddUser = () => {
         setEditingUser(null);
@@ -1217,7 +1229,9 @@ const SettingsPage = ({ onBack, currentUserData }) => {
 
     const handleDeleteUser = (userId) => {
         console.log(`Tentativa de deletar usuário: ${userId}`);
-        alert('A função de deletar será implementada em breve!');
+        // A lógica de deletar precisará ser implementada aqui
+        // (provavelmente com uma Cloud Function, mas apenas para deletar)
+        alert('A função de deletar ainda não foi implementada.');
     };
 
     const handleCloseModal = () => {
@@ -1225,19 +1239,34 @@ const SettingsPage = ({ onBack, currentUserData }) => {
         setEditingUser(null);
     };
 
-    const handleSaveUser = (userData) => {
+    const handleSaveUser = async (userData) => {
         console.log('Salvando usuário:', userData);
-        if (editingUser) {
-            setUsers(users.map(u => u.uid === userData.uid ? userData : u));
-        } else {
-            setUsers([...users, { ...userData, uid: `new_${Date.now()}` }]);
-        }
+        // Lógica para salvar (criar ou atualizar) o documento do usuário no Firestore
+        // Isso também precisará de regras de segurança ou uma função para garantir
+        // que apenas admins possam criar/editar outros usuários.
+        alert('A função de salvar ainda não foi implementada.');
         handleCloseModal();
     };
 
 
     if (loading) return <LoadingSpinner />;
-    if (error) return <div className="w-full h-full flex items-center justify-center text-red-500 bg-slate-100 p-4">Erro ao carregar usuários: {error}</div>;
+    
+    // Se houver um erro, mostramos a mensagem de erro em tela cheia.
+    if (error) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-red-500 p-4 text-center">
+                <Lock size={48} className="mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Acesso Negado</h2>
+                <p>{error}</p>
+                <button
+                    onClick={onBack}
+                    className="mt-8 flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+                >
+                    <Home size={20} /> Voltar ao Menu
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-slate-200 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
@@ -1270,7 +1299,7 @@ const SettingsPage = ({ onBack, currentUserData }) => {
                         <tbody className="divide-y divide-slate-200">
                             {users.map(user => (
                                 <tr key={user.uid} className="hover:bg-slate-50">
-                                    <td className="py-3 px-4 text-sm text-gray-800">{user.nome}</td>
+                                    <td className="py-3 px-4 text-sm text-gray-800">{user.nome || 'Não definido'}</td>
                                     <td className="py-3 px-4 text-sm text-gray-500">{user.email}</td>
                                     <td className="py-3 px-4 text-sm">
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.isAdmin ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-600'}`}>
@@ -1630,4 +1659,5 @@ export default function App() {
                 contextName={chatContextName}
             />
         </main>
-    
+    )
+}
