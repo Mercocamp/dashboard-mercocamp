@@ -1187,13 +1187,34 @@ const SettingsPage = ({ onBack, currentUserData }) => {
     // --- ATUALIZADO: Busca de dados reais da Cloud Function ---
     useEffect(() => {
         const fetchUsers = async () => {
+            if (!auth.currentUser) {
+                setError("Usuário não autenticado.");
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             setError(null);
             try {
-                // Prepara a chamada para a nossa Cloud Function 'listUsers'
-                const listUsersFunction = httpsCallable(functions, 'listUsers');
-                const result = await listUsersFunction();
-                setUsers(result.data); // A lista de usuários vem em result.data
+                // CORREÇÃO: Usando fetch com cabeçalhos corretos
+                const token = await auth.currentUser.getIdToken();
+                const functionURL = 'https://southamerica-east1-dashboard-mercocamp-214f1.cloudfunctions.net/listUsers';
+                
+                const response = await fetch(functionURL, {
+                    method: 'POST', // Pode ser GET ou POST, desde que o backend permita
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+                }
+
+                const result = await response.json();
+                setUsers(result);
             } catch (err) {
                 console.error("Erro ao buscar usuários:", err);
                 setError(err.message);
