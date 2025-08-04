@@ -4,7 +4,6 @@ import { LogOut, Home, Search, Users, DollarSign, Globe, Building, Package, Ware
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
-// ATUALIZADO: Precisamos das functions de volta para criar/editar usuários
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
 
@@ -22,7 +21,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-// ATUALIZADO: Inicializa as functions novamente
 const functions = getFunctions(app, 'southamerica-east1');
 
 
@@ -1178,46 +1176,50 @@ const ConstructionPage = ({ onBack, title = "Página" }) => (
     </div>
 );
 
-// --- Componente de Configurações (VERSÃO SIMPLIFICADA E CORRIGIDA) ---
+// --- Componente de Configurações ATUALIZADO ---
 const SettingsPage = ({ onBack, currentUserData }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [userToDelete, setUserToDelete] = useState(null); // Estado para o modal de confirmação de exclusão
+    const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const showNotification = (message, type) => {
+        setNotification({ show: true, message, type });
+        setTimeout(() => {
+            setNotification({ show: false, message: '', type: '' });
+        }, 3000);
+    };
+
+    const fetchUsers = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const usersCollectionRef = collection(db, "users");
+            const querySnapshot = await getDocs(usersCollectionRef);
+            const usersList = querySnapshot.docs.map(doc => ({
+                uid: doc.id,
+                ...doc.data()
+            }));
+            setUsers(usersList);
+        } catch (err) {
+            console.error("Erro ao buscar usuários:", err);
+            if (err.code === 'permission-denied') {
+                setError("Você não tem permissão para acessar esta página.");
+            } else {
+                setError("Ocorreu um erro ao carregar os usuários.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                // Tenta buscar a coleção inteira de usuários.
-                // As regras de segurança do Firestore vão permitir ou bloquear isso.
-                const usersCollectionRef = collection(db, "users");
-                const querySnapshot = await getDocs(usersCollectionRef);
-
-                // Se o código chegou até aqui, o usuário É um admin.
-                const usersList = querySnapshot.docs.map(doc => ({
-                    uid: doc.id,
-                    ...doc.data()
-                }));
-                setUsers(usersList);
-
-            } catch (err) {
-                console.error("Erro ao buscar usuários:", err);
-                // Se o erro for de permissão negada, o usuário NÃO é um admin.
-                if (err.code === 'permission-denied') {
-                    setError("Você não tem permissão para acessar esta página.");
-                } else {
-                    setError("Ocorreu um erro ao carregar os usuários.");
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchUsers();
-    }, []); // O array vazio [] garante que isso rode apenas uma vez.
+    }, []);
 
     const handleAddUser = () => {
         setEditingUser(null);
@@ -1229,11 +1231,25 @@ const SettingsPage = ({ onBack, currentUserData }) => {
         setIsModalOpen(true);
     };
 
-    const handleDeleteUser = (userId) => {
-        console.log(`Tentativa de deletar usuário: ${userId}`);
-        // A lógica de deletar precisará ser implementada aqui
-        // (provavelmente com uma Cloud Function, mas apenas para deletar)
-        alert('A função de deletar ainda não foi implementada.');
+    const handleDeleteUser = (user) => {
+        setUserToDelete(user);
+    };
+    
+    const executeDelete = async () => {
+        if (!userToDelete) return;
+        setIsSubmitting(true);
+        try {
+            const deleteUserFunction = httpsCallable(functions, 'deleteUser');
+            await deleteUserFunction({ uid: userToDelete.uid });
+            showNotification('Usuário excluído com sucesso!', 'success');
+            setUserToDelete(null);
+            fetchUsers();
+        } catch (error) {
+            console.error("Erro ao deletar usuário:", error);
+            showNotification(`Falha ao excluir: ${error.message}`, 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleCloseModal = () => {
@@ -1242,18 +1258,29 @@ const SettingsPage = ({ onBack, currentUserData }) => {
     };
 
     const handleSaveUser = async (userData) => {
-        console.log('Salvando usuário:', userData);
-        // Lógica para salvar (criar ou atualizar) o documento do usuário no Firestore
-        // Isso também precisará de regras de segurança ou uma função para garantir
-        // que apenas admins possam criar/editar outros usuários.
-        alert('A função de salvar ainda não foi implementada.');
-        handleCloseModal();
+        setIsSubmitting(true);
+        try {
+            if (userData.uid) {
+                const updateUserFunction = httpsCallable(functions, 'updateUser');
+                await updateUserFunction(userData);
+                showNotification('Usuário atualizado com sucesso!', 'success');
+            } else {
+                const createUserFunction = httpsCallable(functions, 'createUser');
+                await createUserFunction(userData);
+                showNotification('Usuário criado com sucesso!', 'success');
+            }
+            handleCloseModal();
+            fetchUsers();
+        } catch (error) {
+            console.error("Erro ao salvar usuário:", error);
+            showNotification(`Falha ao salvar: ${error.message}`, 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
-
 
     if (loading) return <LoadingSpinner />;
     
-    // Se houver um erro, mostramos a mensagem de erro em tela cheia.
     if (error) {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-red-500 p-4 text-center">
@@ -1272,6 +1299,11 @@ const SettingsPage = ({ onBack, currentUserData }) => {
 
     return (
         <div className="bg-slate-200 text-gray-800 min-h-screen p-4 sm:p-6 lg:p-8">
+            {notification.show && (
+                <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white z-50 ${notification.type === 'success' ? 'bg-teal-500' : 'bg-red-500'}`}>
+                    {notification.message}
+                </div>
+            )}
             <header className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Configurações</h1>
                 <button onClick={onBack} className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors"><Home size={20} /> Menu</button>
@@ -1311,7 +1343,7 @@ const SettingsPage = ({ onBack, currentUserData }) => {
                                     <td className="py-3 px-4 text-sm flex gap-2">
                                         <button onClick={() => handleEditUser(user)} className="text-blue-600 hover:text-blue-800">Editar</button>
                                         <button
-                                            onClick={() => handleDeleteUser(user.uid)}
+                                            onClick={() => handleDeleteUser(user)}
                                             className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={user.email === 'administrativo@mercocamp.com'}
                                         >
@@ -1330,13 +1362,29 @@ const SettingsPage = ({ onBack, currentUserData }) => {
                 onClose={handleCloseModal}
                 onSave={handleSaveUser}
                 userData={editingUser}
+                isSubmitting={isSubmitting}
             />
+            
+            <Modal show={!!userToDelete} onClose={() => setUserToDelete(null)} title="Confirmar Exclusão">
+                 <div>
+                    <p className="mb-6">Você tem certeza que deseja excluir permanentemente o usuário <span className="font-bold">{userToDelete?.nome}</span>? Esta ação não pode ser desfeita.</p>
+                    <div className="flex justify-end gap-4">
+                        <button onClick={() => setUserToDelete(null)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                            Cancelar
+                        </button>
+                        <button onClick={executeDelete} disabled={isSubmitting} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
+                            {isSubmitting ? 'Excluindo...' : 'Excluir'}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
 
+
 // --- Componente para o Modal de Usuário ---
-const UserModal = ({ isOpen, onClose, onSave, userData }) => {
+const UserModal = ({ isOpen, onClose, onSave, userData, isSubmitting }) => {
     const [formData, setFormData] = useState({});
 
     const allPermissions = [
@@ -1411,11 +1459,11 @@ const UserModal = ({ isOpen, onClose, onSave, userData }) => {
                 {!userData && (
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Senha Provisória</label>
-                        <input type="password" name="password" value={formData.password} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" />
+                        <input type="password" name="password" value={formData.password || ''} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" />
                     </div>
                 )}
                 <div className="flex items-center">
-                    <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleChange} className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500" />
+                    <input type="checkbox" name="isAdmin" checked={formData.isAdmin || false} onChange={handleChange} className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500" />
                     <label className="ml-2 block text-sm text-gray-900">É Administrador? (Acesso total)</label>
                 </div>
 
@@ -1445,7 +1493,9 @@ const UserModal = ({ isOpen, onClose, onSave, userData }) => {
 
                 <div className="flex justify-end gap-4 pt-4">
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancelar</button>
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar</button>
+                    <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                        {isSubmitting ? 'Salvando...' : 'Salvar'}
+                    </button>
                 </div>
             </form>
         </Modal>
