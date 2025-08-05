@@ -9,6 +9,7 @@ on:
     paths:
       - 'functions/**'    # Roda se qualquer arquivo dentro da pasta 'functions' for alterado
       - 'firebase.json'   # Roda se o arquivo de configuração do Firebase for alterado
+      - '.firebaserc'     # Roda se o novo arquivo de configuração for alterado
 
 jobs:
   deploy_functions:
@@ -28,12 +29,12 @@ jobs:
       - name: Install Function Dependencies
         run: cd functions && npm install
 
-      # 4. ATUALIZADO: Executa o deploy usando a nova Conta de Serviço
+      # 4. ATUALIZADO: Executa o deploy usando a nova Conta de Serviço e especificando o projeto
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only functions --force
+          # Adicionamos o --project diretamente aqui para garantir que o comando use o projeto correto
+          args: deploy --only functions --project dashboard-mercocamp-214f1 --force
         env:
           # Usa o segredo que você criou no GitHub com o conteúdo do arquivo JSON
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_DASHBOARD_MERCO }}
-          PROJECT_ID: dashboard-mercocamp-214f1
