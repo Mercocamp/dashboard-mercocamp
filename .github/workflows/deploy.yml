@@ -1,35 +1,39 @@
+# Nome do fluxo de trabalho
 name: Deploy to Firebase Functions
 
+# Gatilhos: quando esta automação deve rodar
 on:
   push:
     branches:
-      - main # Garante que a automação só roda na branch 'main'
+      - main # Roda apenas quando há um push para a branch 'main'
     paths:
-      - 'functions/**'      # Roda se a pasta functions for alterada
-      - 'firebase.json'     # Roda se o firebase.json for alterado
+      - 'functions/**'    # Roda se qualquer arquivo dentro da pasta 'functions' for alterado
+      - 'firebase.json'   # Roda se o arquivo de configuração do Firebase for alterado
 
 jobs:
   deploy_functions:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Usa uma máquina virtual Linux para rodar os comandos
     steps:
       # 1. Baixa o código do seu repositório para a máquina virtual
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2. (Passo de Depuração) Lista os arquivos na raiz para confirmar que firebase.json está lá
-      - name: List files in the root directory
-        run: ls -la
-
-      # 3. Configura o ambiente Node.js
+      # 2. Configura o ambiente Node.js na versão 18, que é compatível com suas functions
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      # 4. Entra na pasta 'functions' e instala os pacotes necessários (firebase-admin, etc.)
+      # 3. Entra na pasta 'functions' e instala as dependências (firebase-admin, etc.)
       - name: Install Function Dependencies
         run: cd functions && npm install
 
-      # 5. Executa o comando de deploy a partir da raiz do projeto
+      # 4. ATUALIZADO: Executa o deploy usando a nova Conta de Serviço
       - name: Deploy to Firebase
-        run: npx firebase-tools deploy --only functions --token "${{ secrets.FIREBASE_TOKEN }}" --project dashboard-mercocamp-214f1 --force
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions --force
+        env:
+          # Usa o segredo que você criou no GitHub com o conteúdo do arquivo JSON
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_DASHBOARD_MERCO }}
+          PROJECT_ID: dashboard-mercocamp-214f1
