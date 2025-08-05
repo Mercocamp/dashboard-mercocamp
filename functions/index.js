@@ -76,7 +76,6 @@ exports.updateUser = functions
             throw new functions.https.HttpsError("internal", error.message);
         }
     });
-
 /**
  * Deleta um usuário do Firebase Auth e do Firestore.
  * Apenas administradores podem chamar esta função.
