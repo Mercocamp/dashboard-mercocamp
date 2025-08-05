@@ -103,3 +103,19 @@ exports.deleteUser = functions
             throw new functions.https.HttpsError("internal", error.message);
         }
     });
+// ATENÇÃO: Função temporária para definir o primeiro administrador.
+// DEVE SER REMOVIDA APÓS O PRIMEIRO USO.
+exports.setInitialAdmin = functions
+    .region("southamerica-east1")
+    .https.onRequest(async (req, res) => {
+        // Sem verificação de segurança para o primeiro uso!
+        const targetEmail = "administrativo@mercocamp.com"; // Email do admin
+        try {
+            const user = await admin.auth().getUserByEmail(targetEmail);
+            await admin.auth().setCustomUserClaims(user.uid, { admin: true });
+            res.send(`Sucesso! O usuário ${targetEmail} agora é um administrador. Por favor, remova esta função do seu código e faça o deploy novamente para garantir a segurança.`);
+        } catch (error) {
+            console.error("Erro ao definir admin inicial:", error);
+            res.status(500).send("Ocorreu um erro. Verifique os logs da função no Firebase Console.");
+        }
+    });
