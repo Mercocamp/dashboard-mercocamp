@@ -732,7 +732,7 @@ const SettingsPage = ({ onBack, currentUserData }) => {
     const handleDeleteUser = (user) => {
         setUserToDelete(user);
     };
-
+    
     const executeDelete = async () => {
         if (!userToDelete) return;
         setIsSubmitting(true);
@@ -778,7 +778,7 @@ const SettingsPage = ({ onBack, currentUserData }) => {
     };
 
     if (loading) return <LoadingSpinner />;
-
+    
     if (error) {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-red-500 p-4 text-center">
@@ -862,9 +862,9 @@ const SettingsPage = ({ onBack, currentUserData }) => {
                 userData={editingUser}
                 isSubmitting={isSubmitting}
             />
-
+            
             <Modal show={!!userToDelete} onClose={() => setUserToDelete(null)} title="Confirmar Exclusão">
-                <div>
+                 <div>
                     <p className="mb-6">Tem certeza que deseja excluir o usuário <span className="font-bold">{userToDelete?.nome}</span>?</p>
                     <div className="flex justify-end gap-4">
                         <button onClick={() => setUserToDelete(null)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
@@ -1161,7 +1161,7 @@ export default function App() {
             `}</style>
 
             {renderPage()}
-
+            
             <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} showNotification={showNotification} />
 
             <ChatModal
