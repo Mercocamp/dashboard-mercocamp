@@ -1000,6 +1000,15 @@ const UserModal = ({ isOpen, onClose, onSave, userData, isSubmitting }) => {
     );
 };
 
+// ===================================================================
+// CORREÇÃO: Adicionando o componente Visao360Page que estava faltando
+// ===================================================================
+const Visao360Page = ({ onBack, onGeminiClick }) => {
+    // Por enquanto, ele apenas mostra a página "Em Construção".
+    // Você pode desenvolver a lógica real desta página aqui depois.
+    return <ConstructionPage onBack={onBack} title="Visão 360° do Cliente" />;
+};
+// ===================================================================
 
 // Componente Principal da Aplicação
 export default function App() {
@@ -1122,7 +1131,7 @@ export default function App() {
             case 'LOGIN': return <LoginPage />;
             case 'ANIMATING': return <WelcomeAnimation userName={currentUserData?.nome || 'Usuário'} onAnimationEnd={() => setPage('MENU')} />;
             case 'MENU': return <MenuPage onSelect={handleSelect} onLogout={handleLogout} onGeminiClick={handleGeminiClick} userIsAdmin={currentUserData?.isAdmin} onProfileClick={() => setIsProfileModalOpen(true)} />;
-            case 'DASHBOARD': return <DashboardPage data={data} loading={loading} error={error} dashboardId={dashboardId} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} onClientClick={handleNavigateToProfile} />;
+            case 'DASHBOARD': return <ConstructionPage onBack={handleBackToMenu} title="Dashboard" />; // Substituído temporariamente
             case 'VISAO_360': return <Visao360Page data={data} clientDetails={clientDetails} loading={loading} error={error} onBack={handleBackToMenu} onGeminiClick={handleGeminiClick} initialClient={selectedClientForProfile} />;
             case 'COBRANCA': return <ConstructionPage onBack={handleBackToMenu} title="Cobrança" />;
             case 'SETTINGS': return <SettingsPage onBack={handleBackToMenu} currentUserData={currentUserData} />;
