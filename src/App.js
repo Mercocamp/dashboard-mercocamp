@@ -1725,9 +1725,15 @@ export default function App() {
     }, []);
 
     const handleSelect = (pageType, id) => {
-        const pageId = pageType === 'DASHBOARD' || pageType === 'VISAO_360' || pageType === 'COBRANCA' || pageType === 'SETTINGS' ? pageType : 'DASHBOARD';
-        setDashboardId(id);
-        setPage(pageId);
+        // Lógica de roteamento corrigida
+        if (['VISAO_360', 'COBRANCA', 'SETTINGS'].includes(pageType)) {
+            setPage(pageType);
+            setDashboardId(null);
+        } else {
+            // Qualquer outro ID é considerado um dashboard
+            setPage('DASHBOARD');
+            setDashboardId(id);
+        }
         setSelectedClientForProfile(null);
     };
 
@@ -1836,5 +1842,5 @@ export default function App() {
                 contextName={chatContextName}
             />
         </main>
-        )
+    )
 }
