@@ -181,3 +181,4 @@ exports.deleteUser = functions
             throw new functions.https.HttpsError("internal", error.message);
         }
     });
+    
