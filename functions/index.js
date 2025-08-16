@@ -66,7 +66,7 @@ exports.createUser = functions
                 <head>
                     <style>
                         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #111827; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #1F2937; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid #374151;}
+                        .container { max-width: 600px; margin: 0 auto; background-color: #27374D; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid #374151;}
                         .header {
                             text-align: center;
                             padding: 60px 20px;
@@ -77,19 +77,19 @@ exports.createUser = functions
                         .header img {
                             max-width: 220px;
                         }
-                        .content { padding: 30px 40px; color: #D1D5DB; line-height: 1.7; }
+                        .content { padding: 30px 40px; color: #E5E7EB; line-height: 1.7; }
                         .content h2 { color: #ffffff; font-size: 24px; margin-top:0; }
                         .content p { font-size: 16px; }
                         .highlight { background: linear-gradient(to right, #0284c7, #0d9488); -webkit-background-clip: text; color: transparent; font-weight: bold; }
                         .credentials-box { background-color: #374151; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0d9488; }
-                        .credentials-box p { margin: 8px 0; font-size: 16px; color: #ffffff; }
+                        .credentials-box p { margin: 8px 0; font-size: 16px; color: #F3F4F6; }
                         .credentials-box b { color: #9CA3AF; }
                         .button-container { text-align: center; margin: 30px 0; }
                         .button { background: linear-gradient(to right, #0284c7, #0d9488); color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; transition: transform 0.2s; }
                         .button:hover { transform: scale(1.05); }
                         .footer { padding: 30px 20px; text-align: center; font-size: 14px; color: #9CA3AF; border-top: 1px solid #374151;}
                         .footer p { margin: 5px 0; }
-                        .footer a { color: #D1D5DB; text-decoration: none; font-weight: bold; }
+                        .footer a { color: #E5E7EB; text-decoration: none; font-weight: bold; }
                     </style>
                 </head>
                 <body>
@@ -181,4 +181,3 @@ exports.deleteUser = functions
             throw new functions.https.HttpsError("internal", error.message);
         }
     });
-    
