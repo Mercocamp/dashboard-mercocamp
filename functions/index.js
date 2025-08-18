@@ -5,11 +5,13 @@ const nodemailer = require("nodemailer");
 admin.initializeApp();
 
 // --- CONFIGURAÇÃO DO E-MAIL ---
+// É altamente recomendável usar os segredos do Firebase para armazenar credenciais.
+// https://firebase.google.com/docs/functions/config-env
 const mailTransport = nodemailer.createTransport({
     service: "gmail",
     auth: {
         user: "administrativo@mercocamp.com",
-        pass: "znsk vifz eupq tvis", // IMPORTANTE: Considere usar segredos do Firebase para a senha
+        pass: "znsk vifz eupq tvis", // IMPORTANTE: Mova para secrets do Firebase
     },
 });
 
@@ -30,7 +32,7 @@ exports.createUser = functions
         const { email, password, nome, isAdmin, permissoes } = data;
 
         if (!password || password.length < 6) {
-             throw new functions.https.HttpsError(
+            throw new functions.https.HttpsError(
                 "invalid-argument",
                 "A senha deve ter pelo menos 6 caracteres."
             );
@@ -55,7 +57,7 @@ exports.createUser = functions
                 permissoes: permissoes || {},
             });
             
-            // Configurações do e-mail
+            // Configurações do e-mail com o novo template
             const mailOptions = {
                 from: '"Portal Mercocamp" <administrativo@mercocamp.com>',
                 to: email,
@@ -65,37 +67,36 @@ exports.createUser = functions
                 <html>
                 <head>
                     <style>
-                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #111827; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #27374D; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid #374151;}
+                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6; }
+                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e5e7eb;}
                         .header {
                             text-align: center;
-                            padding: 60px 20px;
-                            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://storage.googleapis.com/logos-portal-mercocamp/C%C3%B3pia%20de%20DSC06217.jpg');
-                            background-size: cover;
-                            background-position: center;
+                            padding: 40px 20px;
+                            background-color: #f9fafb;
+                            border-bottom: 1px solid #e5e7eb;
                         }
                         .header img {
-                            max-width: 220px;
+                            max-width: 200px;
                         }
-                        .content { padding: 30px 40px; color: #E5E7EB; line-height: 1.7; }
-                        .content h2 { color: #ffffff; font-size: 24px; margin-top:0; }
+                        .content { padding: 35px 40px; color: #374151; line-height: 1.6; }
+                        .content h2 { color: #111827; font-size: 24px; margin-top:0; }
                         .content p { font-size: 16px; }
-                        .highlight { background: linear-gradient(to right, #0284c7, #0d9488); -webkit-background-clip: text; color: transparent; font-weight: bold; }
-                        .credentials-box { background-color: #374151; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0d9488; }
-                        .credentials-box p { margin: 8px 0; font-size: 16px; color: #F3F4F6; }
-                        .credentials-box b { color: #9CA3AF; }
+                        .highlight { background: linear-gradient(to right, #0284c7, #0d9488); -webkit-background-clip: text; color: transparent; font-weight: 600; }
+                        .credentials-box { background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0d9488; }
+                        .credentials-box p { margin: 8px 0; font-size: 16px; color: #1f2937; }
+                        .credentials-box b { color: #4b5563; font-weight: 600; }
                         .button-container { text-align: center; margin: 30px 0; }
-                        .button { background: linear-gradient(to right, #0284c7, #0d9488); color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; transition: transform 0.2s; }
-                        .button:hover { transform: scale(1.05); }
-                        .footer { padding: 30px 20px; text-align: center; font-size: 14px; color: #9CA3AF; border-top: 1px solid #374151;}
+                        .button { background: linear-gradient(to right, #0284c7, #0d9488); color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; transition: transform 0.2s, box-shadow 0.2s; }
+                        .button:hover { transform: scale(1.05); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+                        .footer { padding: 30px 20px; text-align: center; font-size: 14px; color: #6b7280; background-color: #f9fafb; border-top: 1px solid #e5e7eb;}
                         .footer p { margin: 5px 0; }
-                        .footer a { color: #E5E7EB; text-decoration: none; font-weight: bold; }
+                        .footer a { color: #0284c7; text-decoration: none; font-weight: 600; }
                     </style>
                 </head>
                 <body>
                     <div class="container">
                         <div class="header">
-                            <img src="https://storage.googleapis.com/logos-portal-mercocamp/logo.png" alt="Logo"/>
+                            <img src="https://storage.googleapis.com/logos-portal-mercocamp/logo.png" alt="Logo Mercocamp"/>
                         </div>
                         <div class="content">
                             <h2>Olá, ${nome}!</h2>
@@ -112,13 +113,11 @@ exports.createUser = functions
                             </div>
                         </div>
                         <div class="footer">
-                            <p>Precisa de ajuda?</p>
-                            <p>Para dúvidas, erros ou sugestões, entre em contato:</p>
+                            <p>Precisa de ajuda? Para dúvidas, erros ou sugestões, entre em contato:</p>
                             <p style="margin-top: 15px;">
                                 <a href="mailto:administrativo@mercocamp.com">administrativo@mercocamp.com</a>
-                            </p>
-                            <p>
-                                <a href="https://wa.me/5527999569048">+55 27 99956-9048 (WhatsApp)</a>
+                                |
+                                <a href="https://wa.me/5527999569048">+55 27 99956-9048</a>
                             </p>
                         </div>
                     </div>
@@ -138,7 +137,9 @@ exports.createUser = functions
         }
     });
 
-// ... (as funções updateUser e deleteUser continuam iguais) ...
+// --- FUNÇÕES DE ATUALIZAR E DELETAR USUÁRIO ---
+// (O restante do seu código permanece o mesmo)
+
 exports.updateUser = functions
     .region("southamerica-east1")
     .https.onCall(async (data, context) => {
@@ -162,6 +163,7 @@ exports.updateUser = functions
             throw new functions.https.HttpsError("internal", error.message);
         }
     });
+
 exports.deleteUser = functions
     .region("southamerica-east1")
     .https.onCall(async (data, context) => {
