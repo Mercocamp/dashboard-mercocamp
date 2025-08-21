@@ -71,12 +71,14 @@ exports.createUser = functions
                         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e5e7eb;}
                         .header {
                             text-align: center;
-                            padding: 40px 20px;
-                            background-color: #f9fafb;
+                            padding: 60px 20px;
+                            background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url('https://storage.googleapis.com/logos-portal-mercocamp/C%C3%B3pia%20de%20DSC06217.jpg');
+                            background-size: cover;
+                            background-position: center;
                             border-bottom: 1px solid #e5e7eb;
                         }
                         .header img {
-                            max-width: 200px;
+                            max-width: 220px;
                         }
                         .content { padding: 35px 40px; color: #374151; line-height: 1.6; }
                         .content h2 { color: #111827; font-size: 24px; margin-top:0; }
