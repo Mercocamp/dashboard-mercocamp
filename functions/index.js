@@ -72,10 +72,9 @@ exports.createUser = functions
                         .header {
                             text-align: center;
                             padding: 60px 20px;
-                            background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url('https://storage.googleapis.com/logos-portal-mercocamp/C%C3%B3pia%20de%20DSC06217.jpg');
+                            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://storage.googleapis.com/logos-portal-mercocamp/C%C3%B3pia%20de%20DSC06217.jpg');
                             background-size: cover;
                             background-position: center;
-                            border-bottom: 1px solid #e5e7eb;
                         }
                         .header img {
                             max-width: 220px;
