@@ -57,74 +57,145 @@ exports.createUser = functions
                 permissoes: permissoes || {},
             });
             
-            // Configurações do e-mail com o novo template
+            // --- NOVO TEMPLATE DE E-MAIL ---
+            // Define a paleta de cores da marca e extrai o primeiro nome
+            const brand = { primary:"#0988AD", primaryDark:"#184060", primaryLight:"#4787B2" };
+            const primeiroNome = (nome || "").trim().split(" ")[0] || "bem-vindo";
+            
+            // Configurações do e-mail com o template profissional
             const mailOptions = {
-                from: '"Portal Mercocamp" <administrativo@mercocamp.com>',
-                to: email,
-                subject: 'Bem-vindo ao Futuro da sua Gestão de Operações!',
-                html: `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <style>
-                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e5e7eb;}
-                        .header {
-                            text-align: center;
-                            padding: 60px 20px;
-                            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://storage.googleapis.com/logos-portal-mercocamp/C%C3%B3pia%20de%20DSC06217.jpg');
-                            background-size: cover;
-                            background-position: center;
-                        }
-                        .header img {
-                            max-width: 220px;
-                        }
-                        .content { padding: 35px 40px; color: #374151; line-height: 1.6; }
-                        .content h2 { color: #111827; font-size: 24px; margin-top:0; }
-                        .content p { font-size: 16px; }
-                        .highlight { background: linear-gradient(to right, #0284c7, #0d9488); -webkit-background-clip: text; color: transparent; font-weight: 600; }
-                        .credentials-box { background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0d9488; }
-                        .credentials-box p { margin: 8px 0; font-size: 16px; color: #1f2937; }
-                        .credentials-box b { color: #4b5563; font-weight: 600; }
-                        .button-container { text-align: center; margin: 30px 0; }
-                        .button { background: linear-gradient(to right, #0284c7, #0d9488); color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; transition: transform 0.2s, box-shadow 0.2s; }
-                        .button:hover { transform: scale(1.05); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
-                        .footer { padding: 30px 20px; text-align: center; font-size: 14px; color: #6b7280; background-color: #f9fafb; border-top: 1px solid #e5e7eb;}
-                        .footer p { margin: 5px 0; }
-                        .footer a { color: #0284c7; text-decoration: none; font-weight: 600; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <div class="header">
-                            <img src="https://storage.googleapis.com/logos-portal-mercocamp/logo.png" alt="Logo Mercocamp"/>
-                        </div>
-                        <div class="content">
-                            <h2>Olá, ${nome}!</h2>
-                            <p>Sua jornada para uma gestão de operações <span class="highlight">inteligente e orientada por dados</span> começa agora.</p>
-                            <p>Este não é apenas um dashboard; é o seu novo centro de comando, com análises, visão 360° dos seus clientes e insights gerados por IA para impulsionar suas decisões.</p>
-                            <p>Use as credenciais abaixo para seu primeiro acesso:</p>
-                            <div class="credentials-box">
-                                <p><b>Login:</b> ${email}</p>
-                                <p><b>Senha Provisória:</b> ${password}</p>
-                            </div>
-                            <p><strong>Importante:</strong> Por segurança, recomendamos que você altere sua senha assim que fizer o login através do menu "Meu Perfil".</p>
-                            <div class="button-container">
-                                <a href="https://dashboard-mercocamp.vercel.app" class="button">Acessar Portal Inteligente</a>
-                            </div>
-                        </div>
-                        <div class="footer">
-                            <p>Precisa de ajuda? Para dúvidas, erros ou sugestões, entre em contato:</p>
-                            <p style="margin-top: 15px;">
-                                <a href="mailto:administrativo@mercocamp.com">administrativo@mercocamp.com</a>
-                                |
-                                <a href="https://wa.me/5527999569048">+55 27 99956-9048</a>
-                            </p>
-                        </div>
-                    </div>
-                </body>
-                </html>
-                `
+              from: '"Portal Mercocamp" <administrativo@mercocamp.com>',
+              to: email,
+              subject: 'Bem-vindo ao Portal Mercocamp!',
+              text:`Olá, ${primeiroNome}!\n\nSeu acesso está pronto.\n\nLogin: ${email}\nSenha provisória: ${password}\n\nAltere sua senha em "Meu Perfil" após o primeiro login.\nPortal: https://dashboard-mercocamp.vercel.app\n\nSuporte: administrativo@mercocamp.com | +55 27 99956-9048`,
+              html: `
+            <!doctype html>
+            <html lang="pt-BR">
+              <head>
+                <meta http-equiv="x-ua-compatible" content="ie=edge">
+                <meta name="viewport" content="width=device-width">
+                <meta name="x-apple-disable-message-reformatting">
+                <title>Bem-vindo</title>
+                <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+                  Seu acesso ao Portal Mercocamp está pronto. Use as credenciais e altere a senha no primeiro login.
+                </div>
+              </head>
+              <body style="margin:0;padding:0;background:#f3f4f6;">
+                <center style="width:100%;background:#f3f4f6;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px;margin:0 auto;">
+                    <!-- HERO: foto de fundo com logo sobreposta -->
+                    <tr>
+                      <td background="https://storage.googleapis.com/logos-portal-mercocamp/C%C3%B3pia%20de%20DSC06217.jpg"
+                          bgcolor="#0b1f2a"
+                          style="background:url('https://storage.googleapis.com/logos-portal-mercocamp/C%C3%B3pia%20de%20DSC06217.jpg') center / cover no-repeat #0b1f2a;
+                                 padding:0;">
+                        <!--[if gte mso 9]>
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false"
+                                style="width:640px;height:240px;">
+                          <v:fill type="frame" src="https://storage.googleapis.com/logos-portal-mercocamp/C%C3%B3pia%20de%20DSC06217.jpg" color="#0b1f2a"/>
+                          <v:textbox inset="0,0,0,0">
+                        <![endif]-->
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="height:240px;">
+                          <tr>
+                            <td align="center" valign="middle" style="padding:0 24px;">
+                              <img src="https://storage.googleapis.com/logos-portal-mercocamp/logo.png"
+                                   alt="Mercocamp" width="200"
+                                   style="display:block;height:auto;border:0;filter: drop-shadow(0 2px 8px rgba(0,0,0,.45));">
+                            </td>
+                          </tr>
+                        </table>
+                        <!--[if gte mso 9]></v:textbox></v:rect><![endif]-->
+                      </td>
+                    </tr>
+
+                    <!-- CARD principal -->
+                    <tr>
+                      <td style="background:#ffffff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 14px 14px;box-shadow:0 4px 14px rgba(0,0,0,.06);">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                               style="padding:18px 24px 0 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;">
+                          <tr>
+                            <td>
+                              <h1 style="margin:0 0 8px 0;font-size:22px;line-height:1.35;font-weight:700;">Olá, ${primeiroNome}!</h1>
+                              <div style="height:4px;width:84px;background:${brand.primary};border-radius:999px;"></div>
+                            </td>
+                          </tr>
+                        </table>
+
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                               style="padding:14px 24px 0 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#374151;">
+                          <tr>
+                            <td style="font-size:15px;line-height:1.65;">
+                              <p style="margin:0 0 12px 0;">Sua jornada para uma gestão de operações <strong>inteligente e orientada por dados</strong> começa agora.</p>
+                              <p style="margin:0 0 16px 0;">O Portal Mercocamp é o seu centro de comando: análises claras, visão 360° dos clientes e insights com IA.</p>
+                              <p style="margin:0 0 8px 0;">Use as credenciais abaixo para o primeiro acesso:</p>
+                            </td>
+                          </tr>
+                        </table>
+
+                        <!-- Credenciais -->
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:0 24px 0 24px;">
+                          <tr>
+                            <td style="background:#f9fafb;border:1px solid #e5e7eb;border-left:4px solid ${brand.primary};border-radius:10px;padding:14px 16px;">
+                              <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.35px;">Credenciais</p>
+                              <p style="margin:0 0 6px 0;font-size:15px;color:#1f2937;"><strong>Login:</strong> ${email}</p>
+                              <p style="margin:0;font-size:15px;color:#1f2937;">
+                                <strong>Senha provisória:</strong>
+                                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;background:#eef7fb;border:1px solid #d7ebf3;color:${brand.primaryDark};padding:2px 8px;border-radius:6px;display:inline-block;">${password}</span>
+                              </p>
+                            </td>
+                          </tr>
+                        </table>
+
+                        <!-- Aviso -->
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:10px 24px 0 24px;">
+                          <tr>
+                            <td style="font-size:13px;line-height:1.6;color:#6b7280;">
+                              <p style="margin:0 0 16px 0;"><strong>Importante:</strong> altere sua senha em <em>Meu Perfil</em> logo após o primeiro login.</p>
+                            </td>
+                          </tr>
+                        </table>
+
+                        <!-- Botão -->
+                        <table role="presentation" align="center" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto 6px auto;">
+                          <tr>
+                            <td bgcolor="${brand.primary}" style="border-radius:10px;">
+                              <a href="https://dashboard-mercocamp.vercel.app"
+                                 style="display:inline-block;padding:14px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">Acessar Portal</a>
+                            </td>
+                          </tr>
+                        </table>
+
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:6px 24px 22px 24px;">
+                          <tr>
+                            <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#374151;font-size:14px;line-height:1.6;">
+                              <ul style="margin:10px 0 0 18px;padding:0;">
+                                <li>Indicadores por competência</li>
+                                <li>Top clientes, inadimplência e Pareto</li>
+                                <li>Insights com suporte de IA</li>
+                              </ul>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- Rodapé -->
+                    <tr>
+                      <td style="text-align:center;padding:16px 24px 28px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6b7280;">
+                        <p style="margin:0 0 6px 0;font-size:13px;">Dúvidas? Fale com a gente:</p>
+                        <p style="margin:0 0 10px 0;font-size:14px;">
+                          <a href="mailto:administrativo@mercocamp.com" style="color:${brand.primaryLight};text-decoration:none;font-weight:600;">administrativo@mercocamp.com</a>
+                          &nbsp;|&nbsp;
+                          <a href="https://wa.me/5527999569048" style="color:${brand.primaryLight};text-decoration:none;font-weight:600;">+55 27 99956-9048</a>
+                        </p>
+                        <p style="margin:0;font-size:12px;color:#9ca3af;">© ${new Date().getFullYear()} Mercocamp. Todos os direitos reservados.</p>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </body>
+            </html>
+            `
             };
 
             // Envia o e-mail
